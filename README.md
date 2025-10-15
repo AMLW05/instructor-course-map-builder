@@ -21,7 +21,7 @@ This tool helps you:
 ## 🚀 How to Use
 
 ### Access the Tool
-Visit: **[YOUR-GITHUB-PAGES-URL-HERE]**
+Visit: ** https://github.com/AMLW05/instructor-course-map-builder **
 
 ### 5-Step Process
 
@@ -59,7 +59,7 @@ Visit: **[YOUR-GITHUB-PAGES-URL-HERE]**
 
 Once complete:
 1. Download your Excel file
-2. Email it to: **[YOUR-EMAIL-HERE]**
+2. Email it to: ** westmora@faytechcc.edu **
 3. Subject line: "Course Map - [Course ID]"
 
 ## 💡 Tips
@@ -97,7 +97,7 @@ Contact: ** westmora@faytechcc.edu **
 2. Name it: `README.md`
 3. Paste the text above
 4. **Replace these placeholders:**
-   - `[YOUR-GITHUB-PAGES-URL-HERE]` → Your actual GitHub Pages URL
+   - `https://github.com/AMLW05/instructor-course-map-builder` → Your actual GitHub Pages URL
    - `westmora@faytechcc.edu` → Your email address (appears twice)
 5. Click **Commit changes**
 
