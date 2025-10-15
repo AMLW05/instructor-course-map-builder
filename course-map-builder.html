@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTCC Course Map Builder</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f5f7fa;
+            border-bottom: 2px solid #e1e8ed;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 20px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: #5a6c7d;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a07c 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .clo-list {
+            margin-top: 20px;
+        }
+
+        .clo-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .mlo-entry {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .item-group {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .item-group-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .gap-item {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffc107;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .helper-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .module-selector {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 FTCC Course Map Builder</h1>
+            <p>High-Quality Course Development Program - Instructor Tool</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('course-info')">1. Course Info</button>
+            <button class="nav-tab" onclick="showTab('clos')">2. CLOs</button>
+            <button class="nav-tab" onclick="showTab('mlos')">3. MLOs & Alignment</button>
+            <button class="nav-tab" onclick="showTab('checker')">4. Alignment Checker</button>
+            <button class="nav-tab" onclick="showTab('export')">5. Export & Submit</button>
+        </div>
+
+        <div id="course-info" class="tab-content active">
+            <div class="form-section">
+                <h2 class="section-title">Course Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Course ID *</label>
+                        <input type="text" class="form-control" id="courseId" placeholder="e.g., MAT-110">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course Title *</label>
+                        <input type="text" class="form-control" id="courseTitle" placeholder="e.g., Mathematical Measurement and Literacy">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Instructor Name</label>
+                        <input type="text" class="form-control" id="instructor" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course Representative</label>
+                        <input type="text" class="form-control" id="courseRep" placeholder="Who is the main contact?">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="department" placeholder="e.g., Mathematics">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Canvas ID</label>
+                        <input type="text" class="form-control" id="canvasId" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">NCCCS Course Description *</label>
+                    <textarea class="form-control" id="ncccsDescription" placeholder="Paste the official NCCCS course description here (do not modify)"></textarea>
+                    <p class="helper-text">Copy exactly from the NCCCS Combined Course Library</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="hasNcccsClos" style="width: auto; margin-right: 8px;">
+                        This course has NCCCS-mandated CLOs
+                    </label>
+                    <p class="helper-text">Check if the NCCCS description includes numbered outcomes that must be used exactly as stated</p>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="showTab('clos')">Next: Enter CLOs →</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="clos" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Course Learning Outcomes (CLOs)</h2>
+                
+                <div class="alert alert-info">
+                    <strong>📝 Best Practice:</strong> Include 3-6 CLOs. Each CLO should be measurable and use action verbs (e.g., "analyze," "create," "evaluate").
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">CLO Text *</label>
+                    <textarea class="form-control" id="cloText" placeholder="Enter one CLO (e.g., 'Demonstrate estimation skills and justify results.')"></textarea>
+                    <button class="btn btn-success" onclick="addCLO()" style="margin-top: 10px;">+ Add CLO</button>
+                </div>
+
+                <div class="clo-list" id="cloList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('course-info')">← Back</button>
+                    <button class="btn btn-primary" onclick="showTab('mlos')">Next: Enter MLOs →</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mlos" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Module Learning Objectives & Alignment</h2>
+                
+                <div class="alert alert-info">
+                    <strong>💡 Instructions:</strong> For each MLO, check which CLO(s) it addresses and identify the instructional content, learning activities, assignments, and assessments that support it.
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Module Number *</label>
+                        <select class="form-control" id="moduleNumber">
+                            <option value="1">Module 1</option>
+                            <option value="2">Module 2</option>
+                            <option value="3">Module 3</option>
+                            <option value="4">Module 4</option>
+                            <option value="5">Module 5</option>
+                            <option value="6">Module 6</option>
+                            <option value="7">Module 7</option>
+                            <option value="8">Module 8</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">MLO Number *</label>
+                        <input type="text" class="form-control" id="mloNumber" placeholder="e.g., 1.1, 1.2">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">MLO Text *</label>
+                    <textarea class="form-control" id="mloText" placeholder="Enter the module learning objective"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which CLO(s) does this MLO address? *</label>
+                    <div class="checkbox-group" id="cloCheckboxes"></div>
+                </div>
+
+                <div class="item-group">
+                    <div class="item-group-title">Instructional Content (IC)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="icNumber" placeholder="IC # (e.g., 1, 2)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="icTitle" placeholder="IC Title">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select class="form-control" id="icType">
+                                <option value="">-- Select Type --</option>
+                                <option value="Reading">Reading</option>
+                                <option value="Video">Video</option>
+                                <option value="Lecture/Recording">Lecture/Recording</option>
+                                <option value="Notes/Handout">Notes/Handout</option>
+                                <option value="Simulation">Simulation</option>
+                                <option value="Interactive Tool">Interactive Tool</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="icDescription" placeholder="Brief description (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-group">
+                    <div class="item-group-title">Learning Activity (LA)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="laNumber" placeholder="LA # (e.g., 1, 2)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="laTitle" placeholder="LA Title">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select class="form-control" id="laType">
+                                <option value="">-- Select Type --</option>
+                                <option value="Quiz">Quiz</option>
+                                <option value="Practice Problems">Practice Problems</option>
+                                <option value="Matching Activity">Matching Activity</option>
+                                <option value="Vocab Review">Vocab Review</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="laDescription" placeholder="Brief description (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-group">
+                    <div class="item-group-title">Assignment (Asgmt)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asgmtNumber" placeholder="Asgmt # (e.g., 1, 2)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asgmtTitle" placeholder="Asgmt Title">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select class="form-control" id="asgmtType">
+                                <option value="">-- Select Type --</option>
+                                <option value="Discussion Board">Discussion Board</option>
+                                <option value="Mini-Project">Mini-Project</option>
+                                <option value="Lab">Lab</option>
+                                <option value="Homework Set">Homework Set</option>
+                                <option value="Analysis">Analysis</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asgmtDescription" placeholder="Brief description (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-group">
+                    <div class="item-group-title">Assessment (Asmt)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asmtNumber" placeholder="Asmt # (e.g., 1, 2)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asmtTitle" placeholder="Asmt Title">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select class="form-control" id="asmtType">
+                                <option value="">-- Select Type --</option>
+                                <option value="Module Test">Module Test</option>
+                                <option value="Exam">Exam</option>
+                                <option value="Project">Project</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="asmtDescription" placeholder="Brief description (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-success" onclick="addMLO()">+ Add This MLO</button>
+                    <button class="btn btn-primary" onclick="showTab('checker')">Check Alignment →</button>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>Added MLOs (<span id="mloCount">0</span>)</h3>
+                    <div id="mloList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="checker" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Alignment Checker</h2>
+                
+                <div class="dashboard" id="dashboard"></div>
+
+                <div id="gapsSection"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('mlos')">← Back to MLOs</button>
+                    <button class="btn btn-primary" onclick="showTab('export')">Continue to Export →</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="export" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Export & Submit</h2>
+                
+                <div class="alert alert-success">
+                    <strong>✅ Ready to export!</strong> Your course map will be saved as an Excel file. You can upload this file later to resume work or submit it to Angela Westmoreland for review.
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-success" onclick="exportToExcel()">📥 Download Excel File</button>
+                    <button class="btn btn-secondary" onclick="loadFromFile()">📤 Upload Previous Work</button>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx" style="display: none;">
+
+                <div style="margin-top: 40px; padding: 25px; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px;">Next Steps:</h3>
+                    <ol style="line-height: 2;">
+                        <li>Download your Excel file using the button above</li>
+                        <li>Review the Alignment Checker for any gaps</li>
+                        <li>Make corrections and re-export if needed</li>
+                        <li>Email the final Excel file to Angela Westmoreland for review</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clos = [];
+        let mlos = [];
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'mlos') {
+                updateCLOCheckboxes();
+            }
+            if (tabName === 'checker') {
+                runAlignmentChecker();
+            }
+        }
+
+        function addCLO() {
+            const text = document.getElementById('cloText').value.trim();
+            if (!text) {
+                alert('Please enter CLO text');
+                return;
+            }
+
+            clos.push({
+                number: clos.length + 1,
+                text: text
+            });
+
+            document.getElementById('cloText').value = '';
+            renderCLOs();
+        }
+
+        function renderCLOs() {
+            const list = document.getElementById('cloList');
+            list.innerHTML = clos.map((clo, index) => `
+                <div class="clo-item">
+                    <div>
+                        <strong>CLO ${clo.number}:</strong> ${clo.text}
+                    </div>
+                    <button class="btn-remove" onclick="removeCLO(${index})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function removeCLO(index) {
+            clos.splice(index, 1);
+            clos = clos.map((clo, i) => ({...clo, number: i + 1}));
+            renderCLOs();
+        }
+
+        function updateCLOCheckboxes() {
+            const container = document.getElementById('cloCheckboxes');
+            if (clos.length === 0) {
+                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Please add CLOs first (go back to step 2)</p>';
+                return;
+            }
+            
+            container.innerHTML = clos.map(clo => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="clo-checkbox" value="${clo.number}">
+                    CLO ${clo.number}
+                </label>
+            `).join('');
+        }
+
+        function addMLO() {
+            const moduleNumber = document.getElementById('moduleNumber').value;
+            const mloNumber = document.getElementById('mloNumber').value.trim();
+            const mloText = document.getElementById('mloText').value.trim();
+            
+            const selectedCLOs = Array.from(document.querySelectorAll('.clo-checkbox:checked')).map(cb => cb.value);
+
+            if (!mloNumber || !mloText || selectedCLOs.length === 0) {
+                alert('Please fill in MLO number, text, and select at least one CLO');
+                return;
+            }
+
+            const mlo = {
+                module: moduleNumber,
+                number: mloNumber,
+                text: mloText,
+                clos: selectedCLOs,
+                ic: {
+                    number: document.getElementById('icNumber').value.trim(),
+                    title: document.getElementById('icTitle').value.trim(),
+                    type: document.getElementById('icType').value,
+                    description: document.getElementById('icDescription').value.trim()
+                },
+                la: {
+                    number: document.getElementById('laNumber').value.trim(),
+                    title: document.getElementById('laTitle').value.trim(),
+                    type: document.getElementById('laType').value,
+                    description: document.getElementById('laDescription').value.trim()
+                },
+                asgmt: {
+                    number: document.getElementById('asgmtNumber').value.trim(),
+                    title: document.getElementById('asgmtTitle').value.trim(),
+                    type: document.getElementById('asgmtType').value,
+                    description: document.getElementById('asgmtDescription').value.trim()
+                },
+                asmt: {
+                    number: document.getElementById('asmtNumber').value.trim(),
+                    title: document.getElementById('asmtTitle').value.trim(),
+                    type: document.getElementById('asmtType').value,
+                    description: document.getElementById('asmtDescription').value.trim()
+                }
+            };
+
+            mlos.push(mlo);
+            
+            // Clear form
+            document.getElementById('mloNumber').value = '';
+            document.getElementById('mloText').value = '';
+            document.querySelectorAll('.clo-checkbox').forEach(cb => cb.checked = false);
+            ['ic', 'la', 'asgmt', 'asmt'].forEach(type => {
+                document.getElementById(type + 'Number').value = '';
+                document.getElementById(type + 'Title').value = '';
+                document.getElementById(type + 'Type').value = '';
+                document.getElementById(type + 'Description').value = '';
+            });
+
+            renderMLOs();
+        }
+
+        function renderMLOs() {
+            const list = document.getElementById('mloList');
+            const count = document.getElementById('mloCount');
+            count.textContent = mlos.length;
+
+            list.innerHTML = mlos.map((mlo, index) => `
+                <div class="mlo-entry">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <strong>Module ${mlo.module}, MLO ${mlo.number}:</strong> ${mlo.text}<br>
+                            <small>CLOs: ${mlo.clos.join(', ')}</small><br>
+                            ${mlo.ic.number ? `<small>IC: ${mlo.ic.number} - ${mlo.ic.title}</small><br>` : ''}
+                            ${mlo.la.number ? `<small>LA: ${mlo.la.number} - ${mlo.la.title}</small><br>` : ''}
+                            ${mlo.asgmt.number ? `<small>Asgmt: ${mlo.asgmt.number} - ${mlo.asgmt.title}</small><br>` : ''}
+                            ${mlo.asmt.number ? `<small>Asmt: ${mlo.asmt.number} - ${mlo.asmt.title}</small>` : ''}
+                        </div>
+                        <button class="btn-remove" onclick="removeMLO(${index})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeMLO(index) {
+            mlos.splice(index, 1);
+            renderMLOs();
+        }
+
+        function runAlignmentChecker() {
+            const dashboard = document.getElementById('dashboard');
+            const gapsSection = document.getElementById('gapsSection');
+
+            // Calculate stats
+            const cloCoverage = {};
+            clos.forEach(clo => {
+                cloCoverage[clo.number] = 0;
+            });
+
+            mlos.forEach(mlo => {
+                mlo.clos.forEach(cloNum => {
+                    cloCoverage[cloNum] = (cloCoverage[cloNum] || 0) + 1;
+                });
+            });
+
+            const totalMLOs = mlos.length;
+            const mlosWithIC = mlos.filter(m => m.ic.number).length;
+            const mlosWithLA = mlos.filter(m => m.la.number || m.asgmt.number).length;
+            const mlosWithAsmt = mlos.filter(m => m.asmt.number).length;
+
+            // Render dashboard
+            dashboard.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${clos.length}</div>
+                    <div class="stat-label">Total CLOs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalMLOs}</div>
+                    <div class="stat-label">Total MLOs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${mlosWithIC}/${totalMLOs}</div>
+                    <div class="stat-label">MLOs with IC</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${mlosWithAsmt}/${totalMLOs}</div>
+                    <div class="stat-label">MLOs with Asmt</div>
+                </div>
+            `;
+
+            // Check for gaps
+            const gaps = [];
+
+            // CLO coverage gaps
+            Object.entries(cloCoverage).forEach(([cloNum, count]) => {
+                if (count < 2) {
+                    gaps.push(`⚠️ CLO ${cloNum} is only addressed ${count} time(s). Best practice: address each CLO at least 2 times.`);
+                }
+            });
+
+            // MLO gaps
+            mlos.forEach(mlo => {
+                if (!mlo.ic.number) {
+                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Instructional Content (IC).`);
+                }
+                if (!mlo.la.number && !mlo.asgmt.number) {
+                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Learning Activity or Assignment.`);
+                }
+                if (!mlo.asmt.number) {
+                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Assessment.`);
+                }
+            });
+
+            // Render gaps
+            if (gaps.length === 0) {
+                gapsSection.innerHTML = `
+                    <div class="alert alert-success" style="margin-top: 30px;">
+                        <strong>✅ Excellent!</strong> No alignment gaps detected. Your course map looks good!
+                    </div>
+                `;
+            } else {
+                gapsSection.innerHTML = `
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: #e74c3c; margin-bottom: 20px;">⚠️ Alignment Gaps Detected (${gaps.length})</h3>
+                        ${gaps.map(gap => `<div class="gap-item">${gap}</div>`).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        function exportToExcel() {
+            if (clos.length === 0 || mlos.length === 0) {
+                alert('Please add CLOs and MLOs before exporting');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // Course Info Sheet
+            const courseInfo = [
+                ['FTCC Course Map'],
+                [''],
+                ['Course ID:', document.getElementById('courseId').value],
+                ['Course Title:', document.getElementById('courseTitle').value],
+                ['Instructor:', document.getElementById('instructor').value],
+                ['Course Representative:', document.getElementById('courseRep').value],
+                ['Department:', document.getElementById('department').value],
+                ['Canvas ID:', document.getElementById('canvasId').value],
+                [''],
+                ['NCCCS Description:'],
+                [document.getElementById('ncccsDescription').value],
+                [''],
+                ['Has NCCCS-Mandated CLOs:', document.getElementById('hasNcccsClos').checked ? 'YES' : 'NO']
+            ];
+            const ws1 = XLSX.utils.aoa_to_sheet(courseInfo);
+            XLSX.utils.book_append_sheet(wb, ws1, 'Course Info');
+
+            // CLOs Sheet
+            const cloData = [['CLO #', 'CLO Text']];
+            clos.forEach(clo => {
+                cloData.push([`CLO ${clo.number}`, clo.text]);
+            });
+            const ws2 = XLSX.utils.aoa_to_sheet(cloData);
+            XLSX.utils.book_append_sheet(wb, ws2, 'CLOs');
+
+            // MLO Alignment Sheet
+            const mloData = [['Module', 'MLO #', 'MLO Text', 'CLOs', 'IC #', 'IC Title', 'IC Type', 'IC Description', 'LA #', 'LA Title', 'LA Type', 'LA Description', 'Asgmt #', 'Asgmt Title', 'Asgmt Type', 'Asgmt Description', 'Asmt #', 'Asmt Title', 'Asmt Type', 'Asmt Description']];
+            mlos.forEach(mlo => {
+                mloData.push([
+                    mlo.module,
+                    mlo.number,
+                    mlo.text,
+                    mlo.clos.join(', '),
+                    mlo.ic.number,
+                    mlo.ic.title,
+                    mlo.ic.type,
+                    mlo.ic.description,
+                    mlo.la.number,
+                    mlo.la.title,
+                    mlo.la.type,
+                    mlo.la.description,
+                    mlo.asgmt.number,
+                    mlo.asgmt.title,
+                    mlo.asgmt.type,
+                    mlo.asgmt.description,
+                    mlo.asmt.number,
+                    mlo.asmt.title,
+                    mlo.asmt.type,
+                    mlo.asmt.description
+                ]);
+            });
+            const ws3 = XLSX.utils.aoa_to_sheet(mloData);
+            XLSX.utils.book_append_sheet(wb, ws3, 'MLO Alignment');
+
+            // Export
+            const courseId = document.getElementById('courseId').value || 'Course';
+            const date = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `${courseId}_CourseMap_${date}.xlsx`);
+        }
+
+        function loadFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+
+                    // Load Course Info
+                    const infoSheet = workbook.Sheets['Course Info'];
+                    if (infoSheet) {
+                        document.getElementById('courseId').value = infoSheet['B3']?.v || '';
+                        document.getElementById('courseTitle').value = infoSheet['B4']?.v || '';
+                        document.getElementById('instructor').value = infoSheet['B5']?.v || '';
+                        document.getElementById('courseRep').value = infoSheet['B6']?.v || '';
+                        document.getElementById('department').value = infoSheet['B7']?.v || '';
+                        document.getElementById('canvasId').value = infoSheet['B8']?.v || '';
+                        document.getElementById('ncccsDescription').value = infoSheet['A11']?.v || '';
+                        document.getElementById('hasNcccsClos').checked = infoSheet['B13']?.v === 'YES';
+                    }
+
+                    // Load CLOs
+                    const cloSheet = workbook.Sheets['CLOs'];
+                    if (cloSheet) {
+                        const cloJson = XLSX.utils.sheet_to_json(cloSheet);
+                        clos = cloJson.map((row, index) => ({
+                            number: index + 1,
+                            text: row['CLO Text']
+                        }));
+                        renderCLOs();
+                    }
+
+                    // Load MLOs
+                    const mloSheet = workbook.Sheets['MLO Alignment'];
+                    if (mloSheet) {
+                        const mloJson = XLSX.utils.sheet_to_json(mloSheet);
+                        mlos = mloJson.map(row => ({
+                            module: row['Module'],
+                            number: row['MLO #'],
+                            text: row['MLO Text'],
+                            clos: row['CLOs']?.split(',').map(s => s.trim()) || [],
+                            ic: {
+                                number: row['IC #'] || '',
+                                title: row['IC Title'] || '',
+                                type: row['IC Type'] || '',
+                                description: row['IC Description'] || ''
+                            },
+                            la: {
+                                number: row['LA #'] || '',
+                                title: row['LA Title'] || '',
+                                type: row['LA Type'] || '',
+                                description: row['LA Description'] || ''
+                            },
+                            asgmt: {
+                                number: row['Asgmt #'] || '',
+                                title: row['Asgmt Title'] || '',
+                                type: row['Asgmt Type'] || '',
+                                description: row['Asgmt Description'] || ''
+                            },
+                            asmt: {
+                                number: row['Asmt #'] || '',
+                                title: row['Asmt Title'] || '',
+                                type: row['Asmt Type'] || '',
+                                description: row['Asmt Description'] || ''
+                            }
+                        }));
+                        renderMLOs();
+                    }
+
+                    alert('✅ File loaded successfully! You can continue editing.');
+                    showTab('course-info');
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
