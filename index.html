@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FTCC Course Map Builder</title>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>    <style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -962,58 +963,67 @@
                         document.getElementById('hasNcccsClos').checked = infoSheet['B13']?.v === 'YES';
                     }
 
-                    // Load CLOs
+                    // Load CLOs - FIXED
                     const cloSheet = workbook.Sheets['CLOs'];
                     if (cloSheet) {
                         const cloJson = XLSX.utils.sheet_to_json(cloSheet);
                         clos = cloJson.map((row, index) => ({
                             number: index + 1,
-                            text: row['CLO Text']
-                        }));
+                            text: row['CLO Text'] || ''
+                        })).filter(clo => clo.text); // Filter out empty rows
                         renderCLOs();
                     }
 
-                    // Load MLOs
+                    // Load MLOs - FIXED
                     const mloSheet = workbook.Sheets['MLO Alignment'];
                     if (mloSheet) {
                         const mloJson = XLSX.utils.sheet_to_json(mloSheet);
-                        mlos = mloJson.map(row => ({
-                            module: row['Module'],
-                            number: row['MLO #'],
-                            text: row['MLO Text'],
-                            clos: row['CLOs']?.split(',').map(s => s.trim()) || [],
-                            ic: {
-                                number: row['IC #'] || '',
-                                title: row['IC Title'] || '',
-                                type: row['IC Type'] || '',
-                                description: row['IC Description'] || ''
-                            },
-                            la: {
-                                number: row['LA #'] || '',
-                                title: row['LA Title'] || '',
-                                type: row['LA Type'] || '',
-                                description: row['LA Description'] || ''
-                            },
-                            asgmt: {
-                                number: row['Asgmt #'] || '',
-                                title: row['Asgmt Title'] || '',
-                                type: row['Asgmt Type'] || '',
-                                description: row['Asgmt Description'] || ''
-                            },
-                            asmt: {
-                                number: row['Asmt #'] || '',
-                                title: row['Asmt Title'] || '',
-                                type: row['Asmt Type'] || '',
-                                description: row['Asmt Description'] || ''
+                        mlos = mloJson.map(row => {
+                            // Parse CLOs string safely
+                            let closArray = [];
+                            if (row['CLOs']) {
+                                closArray = String(row['CLOs']).split(',').map(s => s.trim()).filter(s => s);
                             }
-                        }));
+                            
+                            return {
+                                module: String(row['Module'] || ''),
+                                number: String(row['MLO #'] || ''),
+                                text: String(row['MLO Text'] || ''),
+                                clos: closArray,
+                                ic: {
+                                    number: String(row['IC #'] || ''),
+                                    title: String(row['IC Title'] || ''),
+                                    type: String(row['IC Type'] || ''),
+                                    description: String(row['IC Description'] || '')
+                                },
+                                la: {
+                                    number: String(row['LA #'] || ''),
+                                    title: String(row['LA Title'] || ''),
+                                    type: String(row['LA Type'] || ''),
+                                    description: String(row['LA Description'] || '')
+                                },
+                                asgmt: {
+                                    number: String(row['Asgmt #'] || ''),
+                                    title: String(row['Asgmt Title'] || ''),
+                                    type: String(row['Asgmt Type'] || ''),
+                                    description: String(row['Asgmt Description'] || '')
+                                },
+                                asmt: {
+                                    number: String(row['Asmt #'] || ''),
+                                    title: String(row['Asmt Title'] || ''),
+                                    type: String(row['Asmt Type'] || ''),
+                                    description: String(row['Asmt Description'] || '')
+                                }
+                            };
+                        }).filter(mlo => mlo.text); // Filter out empty rows
                         renderMLOs();
                     }
 
                     alert('✅ File loaded successfully! You can continue editing.');
                     showTab('course-info');
                 } catch (error) {
-                    alert('Error loading file: ' + error.message);
+                    alert('Error loading file: ' + error.message + '\n\nPlease make sure you are uploading a file created by this tool.');
+                    console.error('Upload error:', error);
                 }
             };
             reader.readAsArrayBuffer(file);
