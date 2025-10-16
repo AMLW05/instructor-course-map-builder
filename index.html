@@ -46,22 +46,31 @@
             opacity: 0.9;
         }
 
-        .save-reminder {
+        .save-button {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 193, 7, 0.9);
+            background: #ffd700;
             color: #1a1a2e;
-            padding: 10px 20px;
+            padding: 12px 24px;
+            border: none;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            animation: pulse 2s infinite;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s;
+            animation: glow 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.9; }
-            50% { opacity: 1; }
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(255, 215, 0, 0.8); }
         }
 
         .progress-bar {
@@ -277,6 +286,11 @@
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
         }
 
         .checkbox-label {
@@ -366,13 +380,19 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .save-button {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="save-reminder">💾 Save your work frequently!</div>
+            <button class="save-button" onclick="quickSave()">💾 Save Now</button>
             <h1>📚 FTCC Course Map Builder</h1>
             <p>High-Quality Course Development Program - Instructor Tool</p>
         </div>
@@ -528,10 +548,13 @@
                     <div class="form-group">
                         <label class="form-label">Type</label>
                         <select class="form-control" id="icType">
-                            <option value="">-- Select --</option>
+                            <option value="">-- Select Type --</option>
                             <option value="Reading">Reading</option>
                             <option value="Video">Video</option>
-                            <option value="Lecture">Lecture</option>
+                            <option value="Lecture/Recording">Lecture/Recording</option>
+                            <option value="Notes/Handout">Notes/Handout</option>
+                            <option value="Simulation">Simulation</option>
+                            <option value="Interactive Tool">Interactive Tool</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -578,9 +601,11 @@
                     <div class="form-group">
                         <label class="form-label">Type</label>
                         <select class="form-control" id="laType">
-                            <option value="">-- Select --</option>
+                            <option value="">-- Select Type --</option>
                             <option value="Quiz">Quiz</option>
-                            <option value="Practice">Practice</option>
+                            <option value="Practice Problems">Practice Problems</option>
+                            <option value="Matching Activity">Matching Activity</option>
+                            <option value="Vocab Review">Vocab Review</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -593,6 +618,11 @@
                 <div class="form-group">
                     <label class="form-label">Which MLO(s) does this support?</label>
                     <div class="checkbox-group" id="laMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this build on?</label>
+                    <div class="checkbox-group" id="laIcCheckboxes"></div>
                 </div>
 
                 <button class="btn btn-success" onclick="addLA()">+ Add LA</button>
@@ -627,9 +657,12 @@
                     <div class="form-group">
                         <label class="form-label">Type</label>
                         <select class="form-control" id="asgmtType">
-                            <option value="">-- Select --</option>
-                            <option value="Discussion">Discussion</option>
-                            <option value="Project">Project</option>
+                            <option value="">-- Select Type --</option>
+                            <option value="Discussion Board">Discussion Board</option>
+                            <option value="Mini-Project">Mini-Project</option>
+                            <option value="Lab">Lab</option>
+                            <option value="Homework Set">Homework Set</option>
+                            <option value="Analysis">Analysis</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -642,6 +675,16 @@
                 <div class="form-group">
                     <label class="form-label">Which MLO(s) does this support?</label>
                     <div class="checkbox-group" id="asgmtMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this build on?</label>
+                    <div class="checkbox-group" id="asgmtIcCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which LA(s) does this build on?</label>
+                    <div class="checkbox-group" id="asgmtLaCheckboxes"></div>
                 </div>
 
                 <button class="btn btn-success" onclick="addAssignment()">+ Add Assignment</button>
@@ -676,8 +719,8 @@
                     <div class="form-group">
                         <label class="form-label">Type</label>
                         <select class="form-control" id="asmtType">
-                            <option value="">-- Select --</option>
-                            <option value="Test">Test</option>
+                            <option value="">-- Select Type --</option>
+                            <option value="Module Test">Module Test</option>
                             <option value="Exam">Exam</option>
                             <option value="Project">Project</option>
                             <option value="Other">Other</option>
@@ -690,8 +733,23 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <label class="form-label">Which MLO(s) does this assess?</label>
                     <div class="checkbox-group" id="asmtMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtIcCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which LA(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtLaCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which Assignment(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtAsgmtCheckboxes"></div>
                 </div>
 
                 <button class="btn btn-success" onclick="addAssessment()">+ Add Assessment</button>
@@ -769,6 +827,15 @@
         let assignments = [];
         let assessments = [];
 
+        // Quick save function
+        function quickSave() {
+            if (clos.length === 0 && mlos.length === 0) {
+                alert('⚠️ Nothing to save yet! Add some content first.');
+                return;
+            }
+            exportToExcel();
+        }
+
         // Update progress bar
         function updateProgress() {
             const steps = [
@@ -809,22 +876,31 @@
                 }
             });
 
-            // Update checkboxes for MLO mapping
-            if (['ics', 'las', 'assignments', 'assessments'].includes(tabName)) {
-                updateMLOCheckboxes(tabName);
-            }
-
-            // Update MLO CLO checkboxes
+            // Update checkboxes for different mappings
             if (tabName === 'mlos') {
                 updateCLOCheckboxes();
             }
-
-            // Run alignment check
+            if (tabName === 'ics') {
+                updateMLOCheckboxes('ic');
+            }
+            if (tabName === 'las') {
+                updateMLOCheckboxes('la');
+                updateICCheckboxes('la');
+            }
+            if (tabName === 'assignments') {
+                updateMLOCheckboxes('asgmt');
+                updateICCheckboxes('asgmt');
+                updateLACheckboxes('asgmt');
+            }
+            if (tabName === 'assessments') {
+                updateMLOCheckboxes('asmt');
+                updateICCheckboxes('asmt');
+                updateLACheckboxes('asmt');
+                updateAssignmentCheckboxes();
+            }
             if (tabName === 'checker') {
                 runAlignmentCheck();
             }
-
-            // Generate summary
             if (tabName === 'summary') {
                 generateSummary();
             }
@@ -951,9 +1027,9 @@
             }
         }
 
-        // Update MLO checkboxes for activities
+        // Update MLO checkboxes
         function updateMLOCheckboxes(type) {
-            const containerId = `${type === 'ics' ? 'ic' : type === 'las' ? 'la' : type === 'assignments' ? 'asgmt' : 'asmt'}MloCheckboxes`;
+            const containerId = `${type}MloCheckboxes`;
             const container = document.getElementById(containerId);
             
             if (mlos.length === 0) {
@@ -964,7 +1040,60 @@
             container.innerHTML = mlos.map(mlo => `
                 <label class="checkbox-label">
                     <input type="checkbox" class="mlo-checkbox" value="${mlo.module}-${mlo.number}">
-                    ${mlo.module}.${mlo.number}
+                    Module ${mlo.module}, MLO ${mlo.number}
+                </label>
+            `).join('');
+        }
+
+        // Update IC checkboxes
+        function updateICCheckboxes(type) {
+            const containerId = `${type}IcCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (ics.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No ICs added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = ics.map(ic => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="ic-checkbox" value="${ic.number}">
+                    IC ${ic.number}: ${ic.title}
+                </label>
+            `).join('');
+        }
+
+        // Update LA checkboxes
+        function updateLACheckboxes(type) {
+            const containerId = `${type}LaCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (las.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No LAs added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = las.map(la => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="la-checkbox" value="${la.number}">
+                    LA ${la.number}: ${la.title}
+                </label>
+            `).join('');
+        }
+
+        // Update Assignment checkboxes
+        function updateAssignmentCheckboxes() {
+            const container = document.getElementById('asmtAsgmtCheckboxes');
+            
+            if (assignments.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No Assignments added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = assignments.map(asgmt => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="asgmt-checkbox" value="${asgmt.number}">
+                    Assignment ${asgmt.number}: ${asgmt.title}
                 </label>
             `).join('');
         }
@@ -1026,19 +1155,21 @@
             const type = document.getElementById('laType').value;
             const description = document.getElementById('laDescription').value.trim();
             const selectedMLOs = Array.from(document.querySelectorAll('#laMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#laIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
 
             if (!number || !title) {
                 alert('Please enter LA number and title');
                 return;
             }
 
-            las.push({ number, title, type, description, mlos: selectedMLOs });
+            las.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs });
             
             document.getElementById('laNumber').value = '';
             document.getElementById('laTitle').value = '';
             document.getElementById('laType').value = '';
             document.getElementById('laDescription').value = '';
             document.querySelectorAll('#laMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#laIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
             
             renderLAs();
             updateProgress();
@@ -1050,7 +1181,8 @@
                     <div class="item-card-header">
                         <div>
                             <strong>LA ${la.number}:</strong> ${la.title}<br>
-                            <small>Type: ${la.type || 'N/A'} | MLOs: ${la.mlos.join(', ') || 'None'}</small>
+                            <small>Type: ${la.type || 'N/A'}</small><br>
+                            <small>MLOs: ${la.mlos.join(', ') || 'None'} | ICs: ${la.ics.join(', ') || 'None'}</small>
                         </div>
                         <div class="item-card-actions">
                             <button class="btn-remove" onclick="removeLA(${i})">Delete</button>
@@ -1076,19 +1208,23 @@
             const type = document.getElementById('asgmtType').value;
             const description = document.getElementById('asgmtDescription').value.trim();
             const selectedMLOs = Array.from(document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#asgmtIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
+            const selectedLAs = Array.from(document.querySelectorAll('#asgmtLaCheckboxes .la-checkbox:checked')).map(cb => cb.value);
 
             if (!number || !title) {
                 alert('Please enter assignment number and title');
                 return;
             }
 
-            assignments.push({ number, title, type, description, mlos: selectedMLOs });
+            assignments.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs, las: selectedLAs });
             
             document.getElementById('asgmtNumber').value = '';
             document.getElementById('asgmtTitle').value = '';
             document.getElementById('asgmtType').value = '';
             document.getElementById('asgmtDescription').value = '';
             document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asgmtIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asgmtLaCheckboxes .la-checkbox').forEach(cb => cb.checked = false);
             
             renderAssignments();
             updateProgress();
@@ -1100,7 +1236,9 @@
                     <div class="item-card-header">
                         <div>
                             <strong>Assignment ${asgmt.number}:</strong> ${asgmt.title}<br>
-                            <small>Type: ${asgmt.type || 'N/A'} | MLOs: ${asgmt.mlos.join(', ') || 'None'}</small>
+                            <small>Type: ${asgmt.type || 'N/A'}</small><br>
+                            <small>MLOs: ${asgmt.mlos.join(', ') || 'None'}</small><br>
+                            <small>ICs: ${asgmt.ics.join(', ') || 'None'} | LAs: ${asgmt.las.join(', ') || 'None'}</small>
                         </div>
                         <div class="item-card-actions">
                             <button class="btn-remove" onclick="removeAssignment(${i})">Delete</button>
@@ -1126,19 +1264,25 @@
             const type = document.getElementById('asmtType').value;
             const description = document.getElementById('asmtDescription').value.trim();
             const selectedMLOs = Array.from(document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#asmtIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
+            const selectedLAs = Array.from(document.querySelectorAll('#asmtLaCheckboxes .la-checkbox:checked')).map(cb => cb.value);
+            const selectedAsgmts = Array.from(document.querySelectorAll('#asmtAsgmtCheckboxes .asgmt-checkbox:checked')).map(cb => cb.value);
 
             if (!number || !title) {
                 alert('Please enter assessment number and title');
                 return;
             }
 
-            assessments.push({ number, title, type, description, mlos: selectedMLOs });
+            assessments.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs, las: selectedLAs, assignments: selectedAsgmts });
             
             document.getElementById('asmtNumber').value = '';
             document.getElementById('asmtTitle').value = '';
             document.getElementById('asmtType').value = '';
             document.getElementById('asmtDescription').value = '';
             document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtLaCheckboxes .la-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtAsgmtCheckboxes .asgmt-checkbox').forEach(cb => cb.checked = false);
             
             renderAssessments();
             updateProgress();
@@ -1150,7 +1294,10 @@
                     <div class="item-card-header">
                         <div>
                             <strong>Assessment ${asmt.number}:</strong> ${asmt.title}<br>
-                            <small>Type: ${asmt.type || 'N/A'} | MLOs: ${asmt.mlos.join(', ') || 'None'}</small>
+                            <small>Type: ${asmt.type || 'N/A'}</small><br>
+                            <small>MLOs: ${asmt.mlos.join(', ') || 'None'}</small><br>
+                            <small>ICs: ${asmt.ics.join(', ') || 'None'} | LAs: ${asmt.las.join(', ') || 'None'}</small><br>
+                            <small>Assignments: ${asmt.assignments.join(', ') || 'None'}</small>
                         </div>
                         <div class="item-card-actions">
                             <button class="btn-remove" onclick="removeAssessment(${i})">Delete</button>
@@ -1201,7 +1348,7 @@
                 container.innerHTML = `
                     <div class="alert alert-warning">
                         <strong>⚠️ ${warnings.length} Recommendation(s):</strong>
-                        <ul style="margin-top: 10px;">
+                        <ul style="margin-top: 10px; margin-left: 20px;">
                             ${warnings.map(w => `<li>${w}</li>`).join('')}
                         </ul>
                     </div>
@@ -1283,18 +1430,18 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(icData), 'Instructional Content');
 
             // LAs
-            const laData = [['LA #', 'Title', 'Type', 'Description', 'MLOs']];
-            las.forEach(la => laData.push([la.number, la.title, la.type, la.description, la.mlos.join(', ')]));
+            const laData = [['LA #', 'Title', 'Type', 'Description', 'MLOs', 'ICs']];
+            las.forEach(la => laData.push([la.number, la.title, la.type, la.description, la.mlos.join(', '), la.ics.join(', ')]));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(laData), 'Learning Activities');
 
             // Assignments
-            const asgmtData = [['Asgmt #', 'Title', 'Type', 'Description', 'MLOs']];
-            assignments.forEach(a => asgmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', ')]));
+            const asgmtData = [['Asgmt #', 'Title', 'Type', 'Description', 'MLOs', 'ICs', 'LAs']];
+            assignments.forEach(a => asgmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', '), a.ics.join(', '), a.las.join(', ')]));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asgmtData), 'Assignments');
 
             // Assessments
-            const asmtData = [['Asmt #', 'Title', 'Type', 'Description', 'MLOs']];
-            assessments.forEach(a => asmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', ')]));
+            const asmtData = [['Asmt #', 'Title', 'Type', 'Description', 'MLOs', 'ICs', 'LAs', 'Assignments']];
+            assessments.forEach(a => asmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', '), a.ics.join(', '), a.las.join(', '), a.assignments.join(', ')]));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asmtData), 'Assessments');
 
             const courseId = document.getElementById('courseId').value || 'Course';
@@ -1317,9 +1464,9 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
 
-                    // Load Course Info
-                    const infoSheet = workbook.Sheets['Course Info'];
-                    if (infoSheet) {
+                    // Load all data
+                    if (workbook.Sheets['Course Info']) {
+                        const infoSheet = workbook.Sheets['Course Info'];
                         document.getElementById('courseId').value = infoSheet['B3']?.v || '';
                         document.getElementById('courseTitle').value = infoSheet['B4']?.v || '';
                         document.getElementById('instructor').value = infoSheet['B5']?.v || '';
@@ -1327,7 +1474,6 @@
                         document.getElementById('ncccsDescription').value = infoSheet['A9']?.v || '';
                     }
 
-                    // Load CLOs
                     if (workbook.Sheets['CLOs']) {
                         const cloJson = XLSX.utils.sheet_to_json(workbook.Sheets['CLOs']);
                         clos = cloJson.map((row, i) => ({
@@ -1337,7 +1483,6 @@
                         renderCLOs();
                     }
 
-                    // Load MLOs
                     if (workbook.Sheets['MLOs']) {
                         const mloJson = XLSX.utils.sheet_to_json(workbook.Sheets['MLOs']);
                         mlos = mloJson.map(row => ({
@@ -1349,7 +1494,6 @@
                         renderMLOs();
                     }
 
-                    // Load ICs
                     if (workbook.Sheets['Instructional Content']) {
                         const icJson = XLSX.utils.sheet_to_json(workbook.Sheets['Instructional Content']);
                         ics = icJson.map(row => ({
@@ -1362,7 +1506,6 @@
                         renderICs();
                     }
 
-                    // Load LAs
                     if (workbook.Sheets['Learning Activities']) {
                         const laJson = XLSX.utils.sheet_to_json(workbook.Sheets['Learning Activities']);
                         las = laJson.map(row => ({
@@ -1370,12 +1513,12 @@
                             title: String(row['Title'] || ''),
                             type: String(row['Type'] || ''),
                             description: String(row['Description'] || ''),
-                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : []
                         })).filter(l => l.title);
                         renderLAs();
                     }
 
-                    // Load Assignments
                     if (workbook.Sheets['Assignments']) {
                         const asgmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assignments']);
                         assignments = asgmtJson.map(row => ({
@@ -1383,12 +1526,13 @@
                             title: String(row['Title'] || ''),
                             type: String(row['Type'] || ''),
                             description: String(row['Description'] || ''),
-                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : [],
+                            las: row['LAs'] ? String(row['LAs']).split(',').map(s => s.trim()) : []
                         })).filter(a => a.title);
                         renderAssignments();
                     }
 
-                    // Load Assessments
                     if (workbook.Sheets['Assessments']) {
                         const asmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assessments']);
                         assessments = asmtJson.map(row => ({
@@ -1396,7 +1540,10 @@
                             title: String(row['Title'] || ''),
                             type: String(row['Type'] || ''),
                             description: String(row['Description'] || ''),
-                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : [],
+                            las: row['LAs'] ? String(row['LAs']).split(',').map(s => s.trim()) : [],
+                            assignments: row['Assignments'] ? String(row['Assignments']).split(',').map(s => s.trim()) : []
                         })).filter(a => a.title);
                         renderAssessments();
                     }
