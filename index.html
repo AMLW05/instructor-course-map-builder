@@ -1,1 +1,1437 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTCC Course Map Builder</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .save-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #1a1a2e;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s;
+            animation: glow 2s infinite;
+        }
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(255, 215, 0, 0.8); }
+        }
+        .progress-bar {
+            background: #f5f7fa;
+            padding: 20px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #5a6c7d;
+        }
+        .progress-step.complete { color: #00b894; }
+        .progress-step.current { color: #667eea; font-weight: 600; }
+        .progress-step.warning { color: #f39c12; }
+        .nav-tabs {
+            display: flex;
+            background: #f5f7fa;
+            border-bottom: 2px solid #e1e8ed;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            padding: 20px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: #5a6c7d;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .nav-tab:hover { background: rgba(102, 126, 234, 0.1); }
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab-content { display: none; padding: 40px; }
+        .tab-content.active { display: block; }
+        .form-section { margin-bottom: 40px; }
+        .section-title {
+            font-size: 1.8em;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .form-group { margin-bottom: 25px; }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus { outline: none; border-color: #667eea; }
+        textarea.form-control { min-height: 100px; resize: vertical; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a07c 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-skip { background: #bdc3c7; color: #2c3e50; }
+        .btn-edit {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .item-list { margin-top: 20px; }
+        .item-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        .item-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .nav-tabs { flex-direction: column; }
+            .actions { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+            .save-button {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="save-button" onclick="quickSave()">💾 Save Now</button>
+            <h1>📚 FTCC Course Map Builder</h1>
+            <p>High-Quality Course Development Program - Instructor Tool</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-steps" id="progressSteps"></div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('course-info')">1. Course Info</button>
+            <button class="nav-tab" onclick="showTab('clos')">2. CLOs</button>
+            <button class="nav-tab" onclick="showTab('mlos')">3. MLOs</button>
+            <button class="nav-tab" onclick="showTab('ics')">4. Instructional Content</button>
+            <button class="nav-tab" onclick="showTab('las')">5. Learning Activities</button>
+            <button class="nav-tab" onclick="showTab('assignments')">6. Assignments</button>
+            <button class="nav-tab" onclick="showTab('assessments')">7. Assessments</button>
+            <button class="nav-tab" onclick="showTab('checker')">8. Alignment Check</button>
+            <button class="nav-tab" onclick="showTab('summary')">9. Summary</button>
+            <button class="nav-tab" onclick="showTab('export')">10. Export</button>
+        </div>
+
+        <!-- Step 1: Course Info -->
+        <div id="course-info" class="tab-content active">
+            <div class="form-section">
+                <h2 class="section-title">Course Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Course ID *</label>
+                        <input type="text" class="form-control" id="courseId" placeholder="e.g., BUS-253">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course Title *</label>
+                        <input type="text" class="form-control" id="courseTitle" placeholder="e.g., Leadership">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Instructor Name</label>
+                        <input type="text" class="form-control" id="instructor" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course Representative</label>
+                        <input type="text" class="form-control" id="courseRep" placeholder="Main contact">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">NCCCS Course Description *</label>
+                    <textarea class="form-control" id="ncccsDescription" placeholder="Paste official description"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="showTab('clos')">Next: Add CLOs →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: CLOs -->
+        <div id="clos" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Course Learning Outcomes (CLOs)</h2>
+                
+                <div class="alert alert-info">
+                    <strong>📝 Best Practice:</strong> Add 3-6 CLOs. Each CLO should be addressed at least twice throughout the course.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">CLO Text *</label>
+                    <textarea class="form-control" id="cloText" placeholder="Enter CLO (e.g., 'Define business law and explain its relationship to business functions.')"></textarea>
+                    <button class="btn btn-success" onclick="addCLO()" style="margin-top: 10px;">+ Add CLO</button>
+                </div>
+
+                <div class="item-list" id="cloList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('course-info')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('mlos')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('mlos')">Next: Add MLOs →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: MLOs -->
+        <div id="mlos" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Module Learning Outcomes (MLOs)</h2>
+                
+                <div class="alert alert-info">
+                    <strong>💡 Note:</strong> Add MLOs here. You'll connect learning activities to them in the next steps.
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Module Number *</label>
+                        <select class="form-control" id="moduleNumber">
+                            <option value="1">Module 1</option>
+                            <option value="2">Module 2</option>
+                            <option value="3">Module 3</option>
+                            <option value="4">Module 4</option>
+                            <option value="5">Module 5</option>
+                            <option value="6">Module 6</option>
+                            <option value="7">Module 7</option>
+                            <option value="8">Module 8</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">MLO Number *</label>
+                        <select class="form-control" id="mloNumber">
+                            <option value="">-- Select --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">MLO Text *</label>
+                    <textarea class="form-control" id="mloText" placeholder="Enter MLO"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which CLO(s) does this address?</label>
+                    <div class="checkbox-group" id="mloCloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addMLO()">+ Add MLO</button>
+
+                <div class="item-list" id="mloList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('clos')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('ics')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('ics')">Next: Add Instructional Content →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Instructional Content -->
+        <div id="ics" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Instructional Content (IC)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">IC Number *</label>
+                        <select class="form-control" id="icNumber">
+                            <option value="">-- Select --</option>
+                            ${Array.from({length: 20}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IC Title *</label>
+                        <input type="text" class="form-control" id="icTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="icType">
+                            <option value="">-- Select Type --</option>
+                            <option value="Reading">Reading</option>
+                            <option value="Video">Video</option>
+                            <option value="Lecture/Recording">Lecture/Recording</option>
+                            <option value="Notes/Handout">Notes/Handout</option>
+                            <option value="Simulation">Simulation</option>
+                            <option value="Interactive Tool">Interactive Tool</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="icDescription" placeholder="Brief description">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="icMloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addIC()">+ Add IC</button>
+
+                <div class="item-list" id="icList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('mlos')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('las')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('las')">Next: Add Learning Activities →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Learning Activities -->
+        <div id="las" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Learning Activities (LA)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">LA Number *</label>
+                        <select class="form-control" id="laNumber">
+                            <option value="">-- Select --</option>
+                            ${Array.from({length: 20}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LA Title *</label>
+                        <input type="text" class="form-control" id="laTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="laType">
+                            <option value="">-- Select Type --</option>
+                            <option value="Quiz">Quiz</option>
+                            <option value="Practice Problems">Practice Problems</option>
+                            <option value="Matching Activity">Matching Activity</option>
+                            <option value="Vocab Review">Vocab Review</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="laDescription" placeholder="Brief description">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="laMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this build on?</label>
+                    <div class="checkbox-group" id="laIcCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addLA()">+ Add LA</button>
+
+                <div class="item-list" id="laList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('ics')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('assignments')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('assignments')">Next: Add Assignments →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Assignments -->
+        <div id="assignments" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Assignments</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Assignment Number *</label>
+                        <select class="form-control" id="asgmtNumber">
+                            <option value="">-- Select --</option>
+                            ${Array.from({length: 20}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assignment Title *</label>
+                        <input type="text" class="form-control" id="asgmtTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="asgmtType">
+                            <option value="">-- Select Type --</option>
+                            <option value="Discussion Board">Discussion Board</option>
+                            <option value="Mini-Project">Mini-Project</option>
+                            <option value="Lab">Lab</option>
+                            <option value="Homework Set">Homework Set</option>
+                            <option value="Analysis">Analysis</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="asgmtDescription" placeholder="Brief description">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="asgmtMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this build on?</label>
+                    <div class="checkbox-group" id="asgmtIcCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which LA(s) does this build on?</label>
+                    <div class="checkbox-group" id="asgmtLaCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addAssignment()">+ Add Assignment</button>
+
+                <div class="item-list" id="asgmtList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('las')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('assessments')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('assessments')">Next: Add Assessments →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7: Assessments -->
+        <div id="assessments" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Assessments</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Assessment Number *</label>
+                        <select class="form-control" id="asmtNumber">
+                            <option value="">-- Select --</option>
+                            ${Array.from({length: 20}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assessment Title *</label>
+                        <input type="text" class="form-control" id="asmtTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="asmtType">
+                            <option value="">-- Select Type --</option>
+                            <option value="Module Test">Module Test</option>
+                            <option value="Exam">Exam</option>
+                            <option value="Project">Project</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="asmtDescription" placeholder="Brief description">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtMloCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which IC(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtIcCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which LA(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtLaCheckboxes"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which Assignment(s) does this assess?</label>
+                    <div class="checkbox-group" id="asmtAsgmtCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addAssessment()">+ Add Assessment</button>
+
+                <div class="item-list" id="asmtList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('assignments')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('checker')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('checker')">Next: Check Alignment →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 8: Alignment Checker -->
+        <div id="checker" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Alignment Check</h2>
+                
+                <div class="alert alert-info">
+                    <strong>ℹ️ These are recommendations.</strong> You can still export even with warnings.
+                </div>
+
+                <div id="alignmentWarnings"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('assessments')">← Back</button>
+                    <button class="btn btn-primary" onclick="showTab('summary')">Next: View Summary →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 9: Summary -->
+        <div id="summary" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Course Map Summary</h2>
+                
+                <div class="summary-card" id="summaryContent"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('checker')">← Back</button>
+                    <button class="btn btn-primary" onclick="showTab('export')">Next: Export →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 10: Export -->
+        <div id="export" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Export & Upload</h2>
+                
+                <div class="alert alert-success">
+                    <strong>✅ Ready!</strong> Download your work or upload a previous file to continue.
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-success" onclick="exportToExcel()">📥 Download Excel</button>
+                    <button class="btn btn-secondary" onclick="loadFromFile()">📤 Upload Previous Work</button>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx" style="display: none;">
+
+                <div class="actions" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="showTab('summary')">← Back to Summary</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clos = [];
+        let mlos = [];
+        let ics = [];
+        let las = [];
+        let assignments = [];
+        let assessments = [];
+
+        function quickSave() {
+            if (clos.length === 0 && mlos.length === 0) {
+                alert('⚠️ Nothing to save yet! Add some content first.');
+                return;
+            }
+            exportToExcel();
+        }
+
+        function updateProgress() {
+            const steps = [
+                { name: 'Course Info', complete: document.getElementById('courseId').value && document.getElementById('courseTitle').value },
+                { name: `CLOs (${clos.length})`, complete: clos.length > 0, warning: clos.length === 0 },
+                { name: `MLOs (${mlos.length})`, complete: mlos.length > 0, warning: mlos.length === 0 },
+                { name: `IC (${ics.length})`, complete: ics.length > 0 },
+                { name: `LA (${las.length})`, complete: las.length > 0 },
+                { name: `Asgmt (${assignments.length})`, complete: assignments.length > 0 },
+                { name: `Asmt (${assessments.length})`, complete: assessments.length > 0 }
+            ];
+
+            const progressHTML = steps.map(step => {
+                let className = 'progress-step';
+                let icon = '○';
+                if (step.complete) {
+                    className += ' complete';
+                    icon = '✓';
+                } else if (step.warning) {
+                    className += ' warning';
+                    icon = '⚠';
+                }
+                return `<div class="${className}">${icon} ${step.name}</div>`;
+            }).join('');
+
+            document.getElementById('progressSteps').innerHTML = progressHTML;
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabName.substring(0, 4))) {
+                    tab.classList.add('active');
+                }
+            });
+
+            if (tabName === 'mlos') updateCLOCheckboxes();
+            if (tabName === 'ics') updateMLOCheckboxes('ic');
+            if (tabName === 'las') {
+                updateMLOCheckboxes('la');
+                updateICCheckboxes('la');
+            }
+            if (tabName === 'assignments') {
+                updateMLOCheckboxes('asgmt');
+                updateICCheckboxes('asgmt');
+                updateLACheckboxes('asgmt');
+            }
+            if (tabName === 'assessments') {
+                updateMLOCheckboxes('asmt');
+                updateICCheckboxes('asmt');
+                updateLACheckboxes('asmt');
+                updateAssignmentCheckboxes();
+            }
+            if (tabName === 'checker') runAlignmentCheck();
+            if (tabName === 'summary') generateSummary();
+
+            updateProgress();
+        }
+
+        function addCLO() {
+            const text = document.getElementById('cloText').value.trim();
+            if (!text) {
+                alert('Please enter CLO text');
+                return;
+            }
+
+            clos.push({ number: clos.length + 1, text });
+            document.getElementById('cloText').value = '';
+            renderCLOs();
+            updateProgress();
+        }
+
+        function renderCLOs() {
+            const html = clos.map((clo, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div><strong>CLO ${clo.number}:</strong> ${clo.text}</div>
+                        <div class="item-card-actions">
+                            <button class="btn btn-edit" onclick="editCLO(${i})">Edit</button>
+                            <button class="btn-remove" onclick="removeCLO(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('cloList').innerHTML = html;
+        }
+
+        function editCLO(index) {
+            const newText = prompt('Edit CLO:', clos[index].text);
+            if (newText && newText.trim()) {
+                clos[index].text = newText.trim();
+                renderCLOs();
+            }
+        }
+
+        function removeCLO(index) {
+            if (confirm('Delete this CLO?')) {
+                clos.splice(index, 1);
+                clos = clos.map((clo, i) => ({ ...clo, number: i + 1 }));
+                renderCLOs();
+                updateProgress();
+            }
+        }
+
+        function updateCLOCheckboxes() {
+            const container = document.getElementById('mloCloCheckboxes');
+            if (clos.length === 0) {
+                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Add CLOs first (Step 2)</p>';
+                return;
+            }
+            
+            container.innerHTML = clos.map(clo => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="clo-checkbox" value="${clo.number}">
+                    <span><strong>CLO ${clo.number}:</strong> ${clo.text.substring(0, 50)}${clo.text.length > 50 ? '...' : ''}</span>
+                </label>
+            `).join('');
+        }
+
+        function addMLO() {
+            const module = document.getElementById('moduleNumber').value;
+            const number = document.getElementById('mloNumber').value;
+            const text = document.getElementById('mloText').value.trim();
+            const selectedCLOs = Array.from(document.querySelectorAll('.clo-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !text) {
+                alert('Please select MLO number and enter text');
+                return;
+            }
+
+            mlos.push({ module, number, text, clos: selectedCLOs });
+            
+            document.getElementById('mloNumber').value = '';
+            document.getElementById('mloText').value = '';
+            document.querySelectorAll('.clo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderMLOs();
+            updateProgress();
+        }
+
+        function renderMLOs() {
+            const html = mlos.map((mlo, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>Module ${mlo.module}, MLO ${mlo.number}:</strong> ${mlo.text}<br>
+                            <small>CLOs: ${mlo.clos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn btn-edit" onclick="editMLO(${i})">Edit</button>
+                            <button class="btn-remove" onclick="removeMLO(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('mloList').innerHTML = html;
+        }
+
+        function editMLO(index) {
+            const mlo = mlos[index];
+            const newText = prompt('Edit MLO:', mlo.text);
+            if (newText && newText.trim()) {
+                mlos[index].text = newText.trim();
+                renderMLOs();
+            }
+        }
+
+        function removeMLO(index) {
+            if (confirm('Delete this MLO?')) {
+                mlos.splice(index, 1);
+                renderMLOs();
+                updateProgress();
+            }
+        }
+
+        function updateMLOCheckboxes(type) {
+            const containerId = `${type}MloCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (mlos.length === 0) {
+                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Add MLOs first (Step 3)</p>';
+                return;
+            }
+            
+            container.innerHTML = mlos.map(mlo => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="mlo-checkbox" value="${mlo.module}.${mlo.number}">
+                    <span><strong>Module ${mlo.module}, MLO ${mlo.number}:</strong> ${mlo.text.substring(0, 40)}${mlo.text.length > 40 ? '...' : ''}</span>
+                </label>
+            `).join('');
+        }
+
+        function updateICCheckboxes(type) {
+            const containerId = `${type}IcCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (ics.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No ICs added yet (optional)</p>';
+                return;
+            }
+            
+            container.innerHTML = ics.map(ic => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="ic-checkbox" value="${ic.number}">
+                    <span><strong>IC ${ic.number}:</strong> ${ic.title}</span>
+                </label>
+            `).join('');
+        }
+
+        function updateLACheckboxes(type) {
+            const containerId = `${type}LaCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (las.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No LAs added yet (optional)</p>';
+                return;
+            }
+            
+            container.innerHTML = las.map(la => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="la-checkbox" value="${la.number}">
+                    <span><strong>LA ${la.number}:</strong> ${la.title}</span>
+                </label>
+            `).join('');
+        }
+
+        function updateAssignmentCheckboxes() {
+            const container = document.getElementById('asmtAsgmtCheckboxes');
+            
+            if (assignments.length === 0) {
+                container.innerHTML = '<p style="color: #95a5a6;">No Assignments added yet (optional)</p>';
+                return;
+            }
+            
+            container.innerHTML = assignments.map(asgmt => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="asgmt-checkbox" value="${asgmt.number}">
+                    <span><strong>Assignment ${asgmt.number}:</strong> ${asgmt.title}</span>
+                </label>
+            `).join('');
+        }
+
+        function addIC() {
+            const number = document.getElementById('icNumber').value;
+            const title = document.getElementById('icTitle').value.trim();
+            const type = document.getElementById('icType').value;
+            const description = document.getElementById('icDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#icMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please select IC number and enter title');
+                return;
+            }
+
+            ics.push({ number, title, type, description, mlos: selectedMLOs });
+            
+            document.getElementById('icNumber').value = '';
+            document.getElementById('icTitle').value = '';
+            document.getElementById('icType').value = '';
+            document.getElementById('icDescription').value = '';
+            document.querySelectorAll('#icMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderICs();
+            updateProgress();
+        }
+
+        function renderICs() {
+            const html = ics.map((ic, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>IC ${ic.number}:</strong> ${ic.title}<br>
+                            <small>Type: ${ic.type || 'N/A'} | MLOs: ${ic.mlos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeIC(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('icList').innerHTML = html;
+        }
+
+        function removeIC(index) {
+            if (confirm('Delete this IC?')) {
+                ics.splice(index, 1);
+                renderICs();
+                updateProgress();
+            }
+        }
+
+        function addLA() {
+            const number = document.getElementById('laNumber').value;
+            const title = document.getElementById('laTitle').value.trim();
+            const type = document.getElementById('laType').value;
+            const description = document.getElementById('laDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#laMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#laIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please select LA number and enter title');
+                return;
+            }
+
+            las.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs });
+            
+            document.getElementById('laNumber').value = '';
+            document.getElementById('laTitle').value = '';
+            document.getElementById('laType').value = '';
+            document.getElementById('laDescription').value = '';
+            document.querySelectorAll('#laMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#laIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
+            
+            renderLAs();
+            updateProgress();
+        }
+
+        function renderLAs() {
+            const html = las.map((la, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>LA ${la.number}:</strong> ${la.title}<br>
+                            <small>Type: ${la.type || 'N/A'}</small><br>
+                            <small>MLOs: ${la.mlos.join(', ') || 'None'} | ICs: ${la.ics.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeLA(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('laList').innerHTML = html;
+        }
+
+        function removeLA(index) {
+            if (confirm('Delete this LA?')) {
+                las.splice(index, 1);
+                renderLAs();
+                updateProgress();
+            }
+        }
+
+        function addAssignment() {
+            const number = document.getElementById('asgmtNumber').value;
+            const title = document.getElementById('asgmtTitle').value.trim();
+            const type = document.getElementById('asgmtType').value;
+            const description = document.getElementById('asgmtDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#asgmtIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
+            const selectedLAs = Array.from(document.querySelectorAll('#asgmtLaCheckboxes .la-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please select assignment number and enter title');
+                return;
+            }
+
+            assignments.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs, las: selectedLAs });
+            
+            document.getElementById('asgmtNumber').value = '';
+            document.getElementById('asgmtTitle').value = '';
+            document.getElementById('asgmtType').value = '';
+            document.getElementById('asgmtDescription').value = '';
+            document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asgmtIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asgmtLaCheckboxes .la-checkbox').forEach(cb => cb.checked = false);
+            
+            renderAssignments();
+            updateProgress();
+        }
+
+        function renderAssignments() {
+            const html = assignments.map((asgmt, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>Assignment ${asgmt.number}:</strong> ${asgmt.title}<br>
+                            <small>Type: ${asgmt.type || 'N/A'}</small><br>
+                            <small>MLOs: ${asgmt.mlos.join(', ') || 'None'}</small><br>
+                            <small>ICs: ${asgmt.ics.join(', ') || 'None'} | LAs: ${asgmt.las.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeAssignment(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('asgmtList').innerHTML = html;
+        }
+
+        function removeAssignment(index) {
+            if (confirm('Delete this assignment?')) {
+                assignments.splice(index, 1);
+                renderAssignments();
+                updateProgress();
+            }
+        }
+
+        function addAssessment() {
+            const number = document.getElementById('asmtNumber').value;
+            const title = document.getElementById('asmtTitle').value.trim();
+            const type = document.getElementById('asmtType').value;
+            const description = document.getElementById('asmtDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+            const selectedICs = Array.from(document.querySelectorAll('#asmtIcCheckboxes .ic-checkbox:checked')).map(cb => cb.value);
+            const selectedLAs = Array.from(document.querySelectorAll('#asmtLaCheckboxes .la-checkbox:checked')).map(cb => cb.value);
+            const selectedAsgmts = Array.from(document.querySelectorAll('#asmtAsgmtCheckboxes .asgmt-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please select assessment number and enter title');
+                return;
+            }
+
+            assessments.push({ number, title, type, description, mlos: selectedMLOs, ics: selectedICs, las: selectedLAs, assignments: selectedAsgmts });
+            
+            document.getElementById('asmtNumber').value = '';
+            document.getElementById('asmtTitle').value = '';
+            document.getElementById('asmtType').value = '';
+            document.getElementById('asmtDescription').value = '';
+            document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtIcCheckboxes .ic-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtLaCheckboxes .la-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#asmtAsgmtCheckboxes .asgmt-checkbox').forEach(cb => cb.checked = false);
+            
+            renderAssessments();
+            updateProgress();
+        }
+
+        function renderAssessments() {
+            const html = assessments.map((asmt, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>Assessment ${asmt.number}:</strong> ${asmt.title}<br>
+                            <small>Type: ${asmt.type || 'N/A'}</small><br>
+                            <small>MLOs: ${asmt.mlos.join(', ') || 'None'}</small><br>
+                            <small>ICs: ${asmt.ics.join(', ') || 'None'} | LAs: ${asmt.las.join(', ') || 'None'}</small><br>
+                            <small>Assignments: ${asmt.assignments.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeAssessment(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('asmtList').innerHTML = html;
+        }
+
+        function removeAssessment(index) {
+            if (confirm('Delete this assessment?')) {
+                assessments.splice(index, 1);
+                renderAssessments();
+                updateProgress();
+            }
+        }
+
+        function runAlignmentCheck() {
+            const warnings = [];
+
+            clos.forEach(clo => {
+                const count = mlos.filter(mlo => mlo.clos.includes(String(clo.number))).length;
+                if (count < 2) {
+                    warnings.push(`⚠️ CLO ${clo.number} is only addressed ${count} time(s). Best practice: address each CLO at least 2 times.`);
+                }
+            });
+
+            mlos.forEach(mlo => {
+                const mloId = `${mlo.module}.${mlo.number}`;
+                const hasIC = ics.some(ic => ic.mlos.includes(mloId));
+                const hasLA = las.some(la => la.mlos.includes(mloId));
+                const hasAsgmt = assignments.some(a => a.mlos.includes(mloId));
+                const hasAsmt = assessments.some(a => a.mlos.includes(mloId));
+
+                if (!hasIC) warnings.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Instructional Content`);
+                if (!hasLA && !hasAsgmt) warnings.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Learning Activity or Assignment`);
+                if (!hasAsmt) warnings.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Assessment`);
+            });
+
+            const container = document.getElementById('alignmentWarnings');
+            if (warnings.length === 0) {
+                container.innerHTML = '<div class="alert alert-success"><strong>✅ Excellent!</strong> No alignment gaps detected.</div>';
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <strong>⚠️ ${warnings.length} Recommendation(s):</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            ${warnings.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function generateSummary() {
+            const summary = `
+                <div class="summary-row">
+                    <strong>Course:</strong>
+                    <span>${document.getElementById('courseId').value} - ${document.getElementById('courseTitle').value}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>CLOs:</strong>
+                    <span>${clos.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>MLOs:</strong>
+                    <span>${mlos.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Instructional Content:</strong>
+                    <span>${ics.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Learning Activities:</strong>
+                    <span>${las.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Assignments:</strong>
+                    <span>${assignments.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Assessments:</strong>
+                    <span>${assessments.length}</span>
+                </div>
+            `;
+            document.getElementById('summaryContent').innerHTML = summary;
+        }
+
+        function exportToExcel() {
+            if (clos.length === 0 && mlos.length === 0) {
+                alert('Please add some content before exporting');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            const courseInfo = [
+                ['FTCC Course Map'],
+                [''],
+                ['Course ID:', document.getElementById('courseId').value],
+                ['Course Title:', document.getElementById('courseTitle').value],
+                ['Instructor:', document.getElementById('instructor').value],
+                ['Course Rep:', document.getElementById('courseRep').value],
+                [''],
+                ['Description:'],
+                [document.getElementById('ncccsDescription').value]
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(courseInfo), 'Course Info');
+
+            const cloData = [['CLO #', 'CLO Text']];
+            clos.forEach(clo => cloData.push([`CLO ${clo.number}`, clo.text]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cloData), 'CLOs');
+
+            const mloData = [['Module', 'MLO #', 'MLO Text', 'CLOs']];
+            mlos.forEach(mlo => mloData.push([mlo.module, mlo.number, mlo.text, mlo.clos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mloData), 'MLOs');
+
+            const icData = [['IC #', 'Title', 'Type', 'Description', 'MLOs']];
+            ics.forEach(ic => icData.push([ic.number, ic.title, ic.type, ic.description, ic.mlos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(icData), 'Instructional Content');
+
+            const laData = [['LA #', 'Title', 'Type', 'Description', 'MLOs', 'ICs']];
+            las.forEach(la => laData.push([la.number, la.title, la.type, la.description, la.mlos.join(', '), la.ics.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(laData), 'Learning Activities');
+
+            const asgmtData = [['Asgmt #', 'Title', 'Type', 'Description', 'MLOs', 'ICs', 'LAs']];
+            assignments.forEach(a => asgmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', '), a.ics.join(', '), a.las.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asgmtData), 'Assignments');
+
+            const asmtData = [['Asmt #', 'Title', 'Type', 'Description', 'MLOs', 'ICs', 'LAs', 'Assignments']];
+            assessments.forEach(a => asmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', '), a.ics.join(', '), a.las.join(', '), a.assignments.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asmtData), 'Assessments');
+
+            const courseId = document.getElementById('courseId').value || 'Course';
+            const date = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `${courseId}_CourseMap_${date}.xlsx`);
+        }
+
+        function loadFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+
+                    if (workbook.Sheets['Course Info']) {
+                        const infoSheet = workbook.Sheets['Course Info'];
+                        document.getElementById('courseId').value = infoSheet['B3']?.v || '';
+                        document.getElementById('courseTitle').value = infoSheet['B4']?.v || '';
+                        document.getElementById('instructor').value = infoSheet['B5']?.v || '';
+                        document.getElementById('courseRep').value = infoSheet['B6']?.v || '';
+                        document.getElementById('ncccsDescription').value = infoSheet['A9']?.v || '';
+                    }
+
+                    if (workbook.Sheets['CLOs']) {
+                        const cloJson = XLSX.utils.sheet_to_json(workbook.Sheets['CLOs']);
+                        clos = cloJson.map((row, i) => ({
+                            number: i + 1,
+                            text: row['CLO Text'] || ''
+                        })).filter(c => c.text);
+                        renderCLOs();
+                    }
+
+                    if (workbook.Sheets['MLOs']) {
+                        const mloJson = XLSX.utils.sheet_to_json(workbook.Sheets['MLOs']);
+                        mlos = mloJson.map(row => ({
+                            module: String(row['Module'] || ''),
+                            number: String(row['MLO #'] || ''),
+                            text: String(row['MLO Text'] || ''),
+                            clos: row['CLOs'] ? String(row['CLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(m => m.text);
+                        renderMLOs();
+                    }
+
+                    if (workbook.Sheets['Instructional Content']) {
+                        const icJson = XLSX.utils.sheet_to_json(workbook.Sheets['Instructional Content']);
+                        ics = icJson.map(row => ({
+                            number: String(row['IC #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(i => i.title);
+                        renderICs();
+                    }
+
+                    if (workbook.Sheets['Learning Activities']) {
+                        const laJson = XLSX.utils.sheet_to_json(workbook.Sheets['Learning Activities']);
+                        las = laJson.map(row => ({
+                            number: String(row['LA #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : []
+                        })).filter(l => l.title);
+                        renderLAs();
+                    }
+
+                    if (workbook.Sheets['Assignments']) {
+                        const asgmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assignments']);
+                        assignments = asgmtJson.map(row => ({
+                            number: String(row['Asgmt #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : [],
+                            las: row['LAs'] ? String(row['LAs']).split(',').map(s => s.trim()) : []
+                        })).filter(a => a.title);
+                        renderAssignments();
+                    }
+
+                    if (workbook.Sheets['Assessments']) {
+                        const asmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assessments']);
+                        assessments = asmtJson.map(row => ({
+                            number: String(row['Asmt #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : [],
+                            ics: row['ICs'] ? String(row['ICs']).split(',').map(s => s.trim()) : [],
+                            las: row['LAs'] ? String(row['LAs']).split(',').map(s => s.trim()) : [],
+                            assignments: row['Assignments'] ? String(row['Assignments']).split(',').map(s => s.trim()) : []
+                        })).filter(a => a.title);
+                        renderAssessments();
+                    }
+
+                    alert('✅ File loaded successfully!');
+                    showTab('course-info');
+                    updateProgress();
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        updateProgress();
+    </script>
+</body>
+</html
