@@ -33,6 +33,7 @@
             color: white;
             padding: 40px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -43,6 +44,61 @@
         .header p {
             font-size: 1.1em;
             opacity: 0.9;
+        }
+
+        .save-reminder {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        .progress-bar {
+            background: #f5f7fa;
+            padding: 20px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #5a6c7d;
+        }
+
+        .progress-step.complete {
+            color: #00b894;
+        }
+
+        .progress-step.current {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-step.warning {
+            color: #f39c12;
         }
 
         .nav-tabs {
@@ -170,18 +226,16 @@
             color: white;
         }
 
-        .clo-list {
-            margin-top: 20px;
+        .btn-skip {
+            background: #bdc3c7;
+            color: #2c3e50;
         }
 
-        .clo-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn-edit {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
         }
 
         .btn-remove {
@@ -194,12 +248,28 @@
             font-size: 14px;
         }
 
-        .mlo-entry {
+        .item-list {
+            margin-top: 20px;
+        }
+
+        .item-card {
             background: #f8f9fa;
-            padding: 25px;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-left: 4px solid #667eea;
+        }
+
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .item-card-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .checkbox-group {
@@ -220,20 +290,6 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
-        }
-
-        .item-group {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e1e8ed;
-        }
-
-        .item-group-title {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
         }
 
         .actions {
@@ -268,38 +324,29 @@
             border: 1px solid #ffeaa7;
         }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 1em;
-            opacity: 0.9;
-        }
-
-        .gap-item {
-            background: #fff3cd;
-            padding: 15px;
+        .summary-card {
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .helper-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
         }
 
         @media (max-width: 768px) {
@@ -320,35 +367,34 @@
                 justify-content: center;
             }
         }
-
-        .helper-text {
-            font-size: 13px;
-            color: #6c757d;
-            margin-top: 5px;
-            font-style: italic;
-        }
-
-        .module-selector {
-            display: inline-block;
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="save-reminder">💾 Save your work frequently!</div>
             <h1>📚 FTCC Course Map Builder</h1>
             <p>High-Quality Course Development Program - Instructor Tool</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-steps" id="progressSteps"></div>
         </div>
 
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="showTab('course-info')">1. Course Info</button>
             <button class="nav-tab" onclick="showTab('clos')">2. CLOs</button>
-            <button class="nav-tab" onclick="showTab('mlos')">3. MLOs & Alignment</button>
-            <button class="nav-tab" onclick="showTab('checker')">4. Alignment Checker</button>
-            <button class="nav-tab" onclick="showTab('export')">5. Export & Submit</button>
+            <button class="nav-tab" onclick="showTab('mlos')">3. MLOs</button>
+            <button class="nav-tab" onclick="showTab('ics')">4. Instructional Content</button>
+            <button class="nav-tab" onclick="showTab('las')">5. Learning Activities</button>
+            <button class="nav-tab" onclick="showTab('assignments')">6. Assignments</button>
+            <button class="nav-tab" onclick="showTab('assessments')">7. Assessments</button>
+            <button class="nav-tab" onclick="showTab('checker')">8. Alignment Check</button>
+            <button class="nav-tab" onclick="showTab('summary')">9. Summary</button>
+            <button class="nav-tab" onclick="showTab('export')">10. Export</button>
         </div>
 
+        <!-- Step 1: Course Info -->
         <div id="course-info" class="tab-content active">
             <div class="form-section">
                 <h2 class="section-title">Course Information</h2>
@@ -356,11 +402,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Course ID *</label>
-                        <input type="text" class="form-control" id="courseId" placeholder="e.g., MAT-110">
+                        <input type="text" class="form-control" id="courseId" placeholder="e.g., BUS-253">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Course Title *</label>
-                        <input type="text" class="form-control" id="courseTitle" placeholder="e.g., Mathematical Measurement and Literacy">
+                        <input type="text" class="form-control" id="courseTitle" placeholder="e.g., Leadership">
                     </div>
                 </div>
 
@@ -371,70 +417,53 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Course Representative</label>
-                        <input type="text" class="form-control" id="courseRep" placeholder="Who is the main contact?">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Department</label>
-                        <input type="text" class="form-control" id="department" placeholder="e.g., Mathematics">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Canvas ID</label>
-                        <input type="text" class="form-control" id="canvasId" placeholder="Optional">
+                        <input type="text" class="form-control" id="courseRep" placeholder="Main contact">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">NCCCS Course Description *</label>
-                    <textarea class="form-control" id="ncccsDescription" placeholder="Paste the official NCCCS course description here (do not modify)"></textarea>
-                    <p class="helper-text">Copy exactly from the NCCCS Combined Course Library</p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" id="hasNcccsClos" style="width: auto; margin-right: 8px;">
-                        This course has NCCCS-mandated CLOs
-                    </label>
-                    <p class="helper-text">Check if the NCCCS description includes numbered outcomes that must be used exactly as stated</p>
+                    <textarea class="form-control" id="ncccsDescription" placeholder="Paste official description"></textarea>
                 </div>
 
                 <div class="actions">
-                    <button class="btn btn-primary" onclick="showTab('clos')">Next: Enter CLOs →</button>
+                    <button class="btn btn-primary" onclick="showTab('clos')">Next: Add CLOs →</button>
                 </div>
             </div>
         </div>
 
+        <!-- Step 2: CLOs -->
         <div id="clos" class="tab-content">
             <div class="form-section">
                 <h2 class="section-title">Course Learning Outcomes (CLOs)</h2>
                 
                 <div class="alert alert-info">
-                    <strong>📝 Best Practice:</strong> Include 3-6 CLOs. Each CLO should be measurable and use action verbs (e.g., "analyze," "create," "evaluate").
+                    <strong>📝 Tip:</strong> Add 3-6 CLOs. Use action verbs (analyze, create, evaluate).
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">CLO Text *</label>
-                    <textarea class="form-control" id="cloText" placeholder="Enter one CLO (e.g., 'Demonstrate estimation skills and justify results.')"></textarea>
+                    <textarea class="form-control" id="cloText" placeholder="Enter CLO"></textarea>
                     <button class="btn btn-success" onclick="addCLO()" style="margin-top: 10px;">+ Add CLO</button>
                 </div>
 
-                <div class="clo-list" id="cloList"></div>
+                <div class="item-list" id="cloList"></div>
 
                 <div class="actions">
                     <button class="btn btn-secondary" onclick="showTab('course-info')">← Back</button>
-                    <button class="btn btn-primary" onclick="showTab('mlos')">Next: Enter MLOs →</button>
+                    <button class="btn btn-skip" onclick="showTab('mlos')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('mlos')">Next: Add MLOs →</button>
                 </div>
             </div>
         </div>
 
+        <!-- Step 3: MLOs (Simplified) -->
         <div id="mlos" class="tab-content">
             <div class="form-section">
-                <h2 class="section-title">Module Learning Objectives & Alignment</h2>
+                <h2 class="section-title">Module Learning Outcomes</h2>
                 
                 <div class="alert alert-info">
-                    <strong>💡 Instructions:</strong> For each MLO, check which CLO(s) it addresses and identify the instructional content, learning activities, assignments, and assessments that support it.
+                    <strong>💡 Note:</strong> Just add MLOs here. You'll connect activities to them in the next steps.
                 </div>
 
                 <div class="form-row">
@@ -453,203 +482,357 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">MLO Number *</label>
-                        <input type="text" class="form-control" id="mloNumber" placeholder="e.g., 1.1, 1.2">
+                        <input type="text" class="form-control" id="mloNumber" placeholder="e.g., 1.1">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">MLO Text *</label>
-                    <textarea class="form-control" id="mloText" placeholder="Enter the module learning objective"></textarea>
+                    <textarea class="form-control" id="mloText" placeholder="Enter MLO"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Which CLO(s) does this MLO address? *</label>
-                    <div class="checkbox-group" id="cloCheckboxes"></div>
+                    <label class="form-label">Which CLO(s) does this address?</label>
+                    <div class="checkbox-group" id="mloCloCheckboxes"></div>
                 </div>
 
-                <div class="item-group">
-                    <div class="item-group-title">Instructional Content (IC)</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="icNumber" placeholder="IC # (e.g., 1, 2)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="icTitle" placeholder="IC Title">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <select class="form-control" id="icType">
-                                <option value="">-- Select Type --</option>
-                                <option value="Reading">Reading</option>
-                                <option value="Video">Video</option>
-                                <option value="Lecture/Recording">Lecture/Recording</option>
-                                <option value="Notes/Handout">Notes/Handout</option>
-                                <option value="Simulation">Simulation</option>
-                                <option value="Interactive Tool">Interactive Tool</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="icDescription" placeholder="Brief description (optional)">
-                        </div>
-                    </div>
-                </div>
+                <button class="btn btn-success" onclick="addMLO()">+ Add MLO</button>
 
-                <div class="item-group">
-                    <div class="item-group-title">Learning Activity (LA)</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="laNumber" placeholder="LA # (e.g., 1, 2)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="laTitle" placeholder="LA Title">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <select class="form-control" id="laType">
-                                <option value="">-- Select Type --</option>
-                                <option value="Quiz">Quiz</option>
-                                <option value="Practice Problems">Practice Problems</option>
-                                <option value="Matching Activity">Matching Activity</option>
-                                <option value="Vocab Review">Vocab Review</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="laDescription" placeholder="Brief description (optional)">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="item-group">
-                    <div class="item-group-title">Assignment (Asgmt)</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asgmtNumber" placeholder="Asgmt # (e.g., 1, 2)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asgmtTitle" placeholder="Asgmt Title">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <select class="form-control" id="asgmtType">
-                                <option value="">-- Select Type --</option>
-                                <option value="Discussion Board">Discussion Board</option>
-                                <option value="Mini-Project">Mini-Project</option>
-                                <option value="Lab">Lab</option>
-                                <option value="Homework Set">Homework Set</option>
-                                <option value="Analysis">Analysis</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asgmtDescription" placeholder="Brief description (optional)">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="item-group">
-                    <div class="item-group-title">Assessment (Asmt)</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asmtNumber" placeholder="Asmt # (e.g., 1, 2)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asmtTitle" placeholder="Asmt Title">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <select class="form-control" id="asmtType">
-                                <option value="">-- Select Type --</option>
-                                <option value="Module Test">Module Test</option>
-                                <option value="Exam">Exam</option>
-                                <option value="Project">Project</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="asmtDescription" placeholder="Brief description (optional)">
-                        </div>
-                    </div>
-                </div>
+                <div class="item-list" id="mloList"></div>
 
                 <div class="actions">
-                    <button class="btn btn-success" onclick="addMLO()">+ Add This MLO</button>
-                    <button class="btn btn-primary" onclick="showTab('checker')">Check Alignment →</button>
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <h3>Added MLOs (<span id="mloCount">0</span>)</h3>
-                    <div id="mloList"></div>
+                    <button class="btn btn-secondary" onclick="showTab('clos')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('ics')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('ics')">Next: Add Instructional Content →</button>
                 </div>
             </div>
         </div>
 
+        <!-- Step 4: Instructional Content -->
+        <div id="ics" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Instructional Content (IC)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">IC Number *</label>
+                        <input type="text" class="form-control" id="icNumber" placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IC Title *</label>
+                        <input type="text" class="form-control" id="icTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="icType">
+                            <option value="">-- Select --</option>
+                            <option value="Reading">Reading</option>
+                            <option value="Video">Video</option>
+                            <option value="Lecture">Lecture</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="icDescription" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="icMloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addIC()">+ Add IC</button>
+
+                <div class="item-list" id="icList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('mlos')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('las')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('las')">Next: Add Learning Activities →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Learning Activities -->
+        <div id="las" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Learning Activities (LA)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">LA Number *</label>
+                        <input type="text" class="form-control" id="laNumber" placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LA Title *</label>
+                        <input type="text" class="form-control" id="laTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="laType">
+                            <option value="">-- Select --</option>
+                            <option value="Quiz">Quiz</option>
+                            <option value="Practice">Practice</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="laDescription" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="laMloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addLA()">+ Add LA</button>
+
+                <div class="item-list" id="laList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('ics')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('assignments')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('assignments')">Next: Add Assignments →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Assignments -->
+        <div id="assignments" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Assignments</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Assignment Number *</label>
+                        <input type="text" class="form-control" id="asgmtNumber" placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assignment Title *</label>
+                        <input type="text" class="form-control" id="asgmtTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="asgmtType">
+                            <option value="">-- Select --</option>
+                            <option value="Discussion">Discussion</option>
+                            <option value="Project">Project</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="asgmtDescription" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="asgmtMloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addAssignment()">+ Add Assignment</button>
+
+                <div class="item-list" id="asgmtList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('las')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('assessments')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('assessments')">Next: Add Assessments →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7: Assessments -->
+        <div id="assessments" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Assessments</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Assessment Number *</label>
+                        <input type="text" class="form-control" id="asmtNumber" placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assessment Title *</label>
+                        <input type="text" class="form-control" id="asmtTitle" placeholder="Title">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" id="asmtType">
+                            <option value="">-- Select --</option>
+                            <option value="Test">Test</option>
+                            <option value="Exam">Exam</option>
+                            <option value="Project">Project</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="asmtDescription" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which MLO(s) does this support?</label>
+                    <div class="checkbox-group" id="asmtMloCheckboxes"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="addAssessment()">+ Add Assessment</button>
+
+                <div class="item-list" id="asmtList"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('assignments')">← Back</button>
+                    <button class="btn btn-skip" onclick="showTab('checker')">Skip for Now →</button>
+                    <button class="btn btn-primary" onclick="showTab('checker')">Next: Check Alignment →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 8: Alignment Checker -->
         <div id="checker" class="tab-content">
             <div class="form-section">
-                <h2 class="section-title">Alignment Checker</h2>
+                <h2 class="section-title">Alignment Check</h2>
                 
-                <div class="dashboard" id="dashboard"></div>
+                <div class="alert alert-info">
+                    <strong>ℹ️ These are recommendations.</strong> You can still export even with warnings.
+                </div>
 
-                <div id="gapsSection"></div>
+                <div id="alignmentWarnings"></div>
 
                 <div class="actions">
-                    <button class="btn btn-secondary" onclick="showTab('mlos')">← Back to MLOs</button>
-                    <button class="btn btn-primary" onclick="showTab('export')">Continue to Export →</button>
+                    <button class="btn btn-secondary" onclick="showTab('assessments')">← Back</button>
+                    <button class="btn btn-primary" onclick="showTab('summary')">Next: View Summary →</button>
                 </div>
             </div>
         </div>
 
+        <!-- Step 9: Summary -->
+        <div id="summary" class="tab-content">
+            <div class="form-section">
+                <h2 class="section-title">Course Map Summary</h2>
+                
+                <div class="summary-card" id="summaryContent"></div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="showTab('checker')">← Back</button>
+                    <button class="btn btn-primary" onclick="showTab('export')">Next: Export →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 10: Export -->
         <div id="export" class="tab-content">
             <div class="form-section">
-                <h2 class="section-title">Export & Submit</h2>
+                <h2 class="section-title">Export & Upload</h2>
                 
                 <div class="alert alert-success">
-                    <strong>✅ Ready to export!</strong> Your course map will be saved as an Excel file. You can upload this file later to resume work or submit it to Angela Westmoreland for review.
+                    <strong>✅ Ready!</strong> Download your work or upload a previous file to continue.
                 </div>
 
                 <div class="actions">
-                    <button class="btn btn-success" onclick="exportToExcel()">📥 Download Excel File</button>
+                    <button class="btn btn-success" onclick="exportToExcel()">📥 Download Excel</button>
                     <button class="btn btn-secondary" onclick="loadFromFile()">📤 Upload Previous Work</button>
                 </div>
                 <input type="file" id="fileInput" accept=".xlsx" style="display: none;">
 
-                <div style="margin-top: 40px; padding: 25px; background: #f8f9fa; border-radius: 8px;">
-                    <h3 style="margin-bottom: 15px;">Next Steps:</h3>
-                    <ol style="line-height: 2;">
-                        <li>Download your Excel file using the button above</li>
-                        <li>Review the Alignment Checker for any gaps</li>
-                        <li>Make corrections and re-export if needed</li>
-                        <li>Email the final Excel file to Angela Westmoreland for review</li>
-                    </ol>
+                <div class="actions" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="showTab('summary')">← Back to Summary</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Data structures
         let clos = [];
         let mlos = [];
+        let ics = [];
+        let las = [];
+        let assignments = [];
+        let assessments = [];
 
+        // Update progress bar
+        function updateProgress() {
+            const steps = [
+                { name: 'Course Info', complete: document.getElementById('courseId').value && document.getElementById('courseTitle').value },
+                { name: `CLOs (${clos.length})`, complete: clos.length > 0, warning: clos.length === 0 },
+                { name: `MLOs (${mlos.length})`, complete: mlos.length > 0, warning: mlos.length === 0 },
+                { name: `IC (${ics.length})`, complete: ics.length > 0 },
+                { name: `LA (${las.length})`, complete: las.length > 0 },
+                { name: `Asgmt (${assignments.length})`, complete: assignments.length > 0 },
+                { name: `Asmt (${assessments.length})`, complete: assessments.length > 0 }
+            ];
+
+            const progressHTML = steps.map(step => {
+                let className = 'progress-step';
+                let icon = '○';
+                if (step.complete) {
+                    className += ' complete';
+                    icon = '✓';
+                } else if (step.warning) {
+                    className += ' warning';
+                    icon = '⚠';
+                }
+                return `<div class="${className}">${icon} ${step.name}</div>`;
+            }).join('');
+
+            document.getElementById('progressSteps').innerHTML = progressHTML;
+        }
+
+        // Tab navigation
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabName.substring(0, 4))) {
+                    tab.classList.add('active');
+                }
+            });
 
+            // Update checkboxes for MLO mapping
+            if (['ics', 'las', 'assignments', 'assessments'].includes(tabName)) {
+                updateMLOCheckboxes(tabName);
+            }
+
+            // Update MLO CLO checkboxes
             if (tabName === 'mlos') {
                 updateCLOCheckboxes();
             }
+
+            // Run alignment check
             if (tabName === 'checker') {
-                runAlignmentChecker();
+                runAlignmentCheck();
             }
+
+            // Generate summary
+            if (tabName === 'summary') {
+                generateSummary();
+            }
+
+            updateProgress();
         }
 
+        // CLO functions
         function addCLO() {
             const text = document.getElementById('cloText').value.trim();
             if (!text) {
@@ -657,37 +840,49 @@
                 return;
             }
 
-            clos.push({
-                number: clos.length + 1,
-                text: text
-            });
-
+            clos.push({ number: clos.length + 1, text });
             document.getElementById('cloText').value = '';
             renderCLOs();
+            updateProgress();
         }
 
         function renderCLOs() {
-            const list = document.getElementById('cloList');
-            list.innerHTML = clos.map((clo, index) => `
-                <div class="clo-item">
-                    <div>
-                        <strong>CLO ${clo.number}:</strong> ${clo.text}
+            const html = clos.map((clo, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div><strong>CLO ${clo.number}:</strong> ${clo.text}</div>
+                        <div class="item-card-actions">
+                            <button class="btn btn-edit" onclick="editCLO(${i})">Edit</button>
+                            <button class="btn-remove" onclick="removeCLO(${i})">Delete</button>
+                        </div>
                     </div>
-                    <button class="btn-remove" onclick="removeCLO(${index})">Remove</button>
                 </div>
             `).join('');
+            document.getElementById('cloList').innerHTML = html;
+        }
+
+        function editCLO(index) {
+            const newText = prompt('Edit CLO:', clos[index].text);
+            if (newText && newText.trim()) {
+                clos[index].text = newText.trim();
+                renderCLOs();
+            }
         }
 
         function removeCLO(index) {
-            clos.splice(index, 1);
-            clos = clos.map((clo, i) => ({...clo, number: i + 1}));
-            renderCLOs();
+            if (confirm('Delete this CLO?')) {
+                clos.splice(index, 1);
+                clos = clos.map((clo, i) => ({ ...clo, number: i + 1 }));
+                renderCLOs();
+                updateProgress();
+            }
         }
 
+        // Update CLO checkboxes for MLOs
         function updateCLOCheckboxes() {
-            const container = document.getElementById('cloCheckboxes');
+            const container = document.getElementById('mloCloCheckboxes');
             if (clos.length === 0) {
-                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Please add CLOs first (go back to step 2)</p>';
+                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Add CLOs first (Step 2)</p>';
                 return;
             }
             
@@ -699,243 +894,415 @@
             `).join('');
         }
 
+        // MLO functions
         function addMLO() {
-            const moduleNumber = document.getElementById('moduleNumber').value;
-            const mloNumber = document.getElementById('mloNumber').value.trim();
-            const mloText = document.getElementById('mloText').value.trim();
-            
+            const module = document.getElementById('moduleNumber').value;
+            const number = document.getElementById('mloNumber').value.trim();
+            const text = document.getElementById('mloText').value.trim();
             const selectedCLOs = Array.from(document.querySelectorAll('.clo-checkbox:checked')).map(cb => cb.value);
 
-            if (!mloNumber || !mloText || selectedCLOs.length === 0) {
-                alert('Please fill in MLO number, text, and select at least one CLO');
+            if (!number || !text) {
+                alert('Please enter MLO number and text');
                 return;
             }
 
-            const mlo = {
-                module: moduleNumber,
-                number: mloNumber,
-                text: mloText,
-                clos: selectedCLOs,
-                ic: {
-                    number: document.getElementById('icNumber').value.trim(),
-                    title: document.getElementById('icTitle').value.trim(),
-                    type: document.getElementById('icType').value,
-                    description: document.getElementById('icDescription').value.trim()
-                },
-                la: {
-                    number: document.getElementById('laNumber').value.trim(),
-                    title: document.getElementById('laTitle').value.trim(),
-                    type: document.getElementById('laType').value,
-                    description: document.getElementById('laDescription').value.trim()
-                },
-                asgmt: {
-                    number: document.getElementById('asgmtNumber').value.trim(),
-                    title: document.getElementById('asgmtTitle').value.trim(),
-                    type: document.getElementById('asgmtType').value,
-                    description: document.getElementById('asgmtDescription').value.trim()
-                },
-                asmt: {
-                    number: document.getElementById('asmtNumber').value.trim(),
-                    title: document.getElementById('asmtTitle').value.trim(),
-                    type: document.getElementById('asmtType').value,
-                    description: document.getElementById('asmtDescription').value.trim()
-                }
-            };
-
-            mlos.push(mlo);
+            mlos.push({ module, number, text, clos: selectedCLOs });
             
-            // Clear form
             document.getElementById('mloNumber').value = '';
             document.getElementById('mloText').value = '';
             document.querySelectorAll('.clo-checkbox').forEach(cb => cb.checked = false);
-            ['ic', 'la', 'asgmt', 'asmt'].forEach(type => {
-                document.getElementById(type + 'Number').value = '';
-                document.getElementById(type + 'Title').value = '';
-                document.getElementById(type + 'Type').value = '';
-                document.getElementById(type + 'Description').value = '';
-            });
-
+            
             renderMLOs();
+            updateProgress();
         }
 
         function renderMLOs() {
-            const list = document.getElementById('mloList');
-            const count = document.getElementById('mloCount');
-            count.textContent = mlos.length;
-
-            list.innerHTML = mlos.map((mlo, index) => `
-                <div class="mlo-entry">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
+            const html = mlos.map((mlo, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
                         <div>
                             <strong>Module ${mlo.module}, MLO ${mlo.number}:</strong> ${mlo.text}<br>
-                            <small>CLOs: ${mlo.clos.join(', ')}</small><br>
-                            ${mlo.ic.number ? `<small>IC: ${mlo.ic.number} - ${mlo.ic.title}</small><br>` : ''}
-                            ${mlo.la.number ? `<small>LA: ${mlo.la.number} - ${mlo.la.title}</small><br>` : ''}
-                            ${mlo.asgmt.number ? `<small>Asgmt: ${mlo.asgmt.number} - ${mlo.asgmt.title}</small><br>` : ''}
-                            ${mlo.asmt.number ? `<small>Asmt: ${mlo.asmt.number} - ${mlo.asmt.title}</small>` : ''}
+                            <small>CLOs: ${mlo.clos.join(', ') || 'None'}</small>
                         </div>
-                        <button class="btn-remove" onclick="removeMLO(${index})">Remove</button>
+                        <div class="item-card-actions">
+                            <button class="btn btn-edit" onclick="editMLO(${i})">Edit</button>
+                            <button class="btn-remove" onclick="removeMLO(${i})">Delete</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+            document.getElementById('mloList').innerHTML = html;
+        }
+
+        function editMLO(index) {
+            const mlo = mlos[index];
+            const newText = prompt('Edit MLO:', mlo.text);
+            if (newText && newText.trim()) {
+                mlos[index].text = newText.trim();
+                renderMLOs();
+            }
         }
 
         function removeMLO(index) {
-            mlos.splice(index, 1);
-            renderMLOs();
+            if (confirm('Delete this MLO?')) {
+                mlos.splice(index, 1);
+                renderMLOs();
+                updateProgress();
+            }
         }
 
-        function runAlignmentChecker() {
-            const dashboard = document.getElementById('dashboard');
-            const gapsSection = document.getElementById('gapsSection');
+        // Update MLO checkboxes for activities
+        function updateMLOCheckboxes(type) {
+            const containerId = `${type === 'ics' ? 'ic' : type === 'las' ? 'la' : type === 'assignments' ? 'asgmt' : 'asmt'}MloCheckboxes`;
+            const container = document.getElementById(containerId);
+            
+            if (mlos.length === 0) {
+                container.innerHTML = '<p style="color: #e74c3c;">⚠️ Add MLOs first (Step 3)</p>';
+                return;
+            }
+            
+            container.innerHTML = mlos.map(mlo => `
+                <label class="checkbox-label">
+                    <input type="checkbox" class="mlo-checkbox" value="${mlo.module}-${mlo.number}">
+                    ${mlo.module}.${mlo.number}
+                </label>
+            `).join('');
+        }
 
-            // Calculate stats
-            const cloCoverage = {};
-            clos.forEach(clo => {
-                cloCoverage[clo.number] = 0;
-            });
+        // IC functions
+        function addIC() {
+            const number = document.getElementById('icNumber').value.trim();
+            const title = document.getElementById('icTitle').value.trim();
+            const type = document.getElementById('icType').value;
+            const description = document.getElementById('icDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#icMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
 
-            mlos.forEach(mlo => {
-                mlo.clos.forEach(cloNum => {
-                    cloCoverage[cloNum] = (cloCoverage[cloNum] || 0) + 1;
-                });
-            });
+            if (!number || !title) {
+                alert('Please enter IC number and title');
+                return;
+            }
 
-            const totalMLOs = mlos.length;
-            const mlosWithIC = mlos.filter(m => m.ic.number).length;
-            const mlosWithLA = mlos.filter(m => m.la.number || m.asgmt.number).length;
-            const mlosWithAsmt = mlos.filter(m => m.asmt.number).length;
+            ics.push({ number, title, type, description, mlos: selectedMLOs });
+            
+            document.getElementById('icNumber').value = '';
+            document.getElementById('icTitle').value = '';
+            document.getElementById('icType').value = '';
+            document.getElementById('icDescription').value = '';
+            document.querySelectorAll('#icMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderICs();
+            updateProgress();
+        }
 
-            // Render dashboard
-            dashboard.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${clos.length}</div>
-                    <div class="stat-label">Total CLOs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${totalMLOs}</div>
-                    <div class="stat-label">Total MLOs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${mlosWithIC}/${totalMLOs}</div>
-                    <div class="stat-label">MLOs with IC</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${mlosWithAsmt}/${totalMLOs}</div>
-                    <div class="stat-label">MLOs with Asmt</div>
-                </div>
-            `;
-
-            // Check for gaps
-            const gaps = [];
-
-            // CLO coverage gaps
-            Object.entries(cloCoverage).forEach(([cloNum, count]) => {
-                if (count < 2) {
-                    gaps.push(`⚠️ CLO ${cloNum} is only addressed ${count} time(s). Best practice: address each CLO at least 2 times.`);
-                }
-            });
-
-            // MLO gaps
-            mlos.forEach(mlo => {
-                if (!mlo.ic.number) {
-                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Instructional Content (IC).`);
-                }
-                if (!mlo.la.number && !mlo.asgmt.number) {
-                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Learning Activity or Assignment.`);
-                }
-                if (!mlo.asmt.number) {
-                    gaps.push(`⚠️ Module ${mlo.module}, MLO ${mlo.number} has no Assessment.`);
-                }
-            });
-
-            // Render gaps
-            if (gaps.length === 0) {
-                gapsSection.innerHTML = `
-                    <div class="alert alert-success" style="margin-top: 30px;">
-                        <strong>✅ Excellent!</strong> No alignment gaps detected. Your course map looks good!
+        function renderICs() {
+            const html = ics.map((ic, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>IC ${ic.number}:</strong> ${ic.title}<br>
+                            <small>Type: ${ic.type || 'N/A'} | MLOs: ${ic.mlos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeIC(${i})">Delete</button>
+                        </div>
                     </div>
-                `;
+                </div>
+            `).join('');
+            document.getElementById('icList').innerHTML = html;
+        }
+
+        function removeIC(index) {
+            if (confirm('Delete this IC?')) {
+                ics.splice(index, 1);
+                renderICs();
+                updateProgress();
+            }
+        }
+
+        // LA functions
+        function addLA() {
+            const number = document.getElementById('laNumber').value.trim();
+            const title = document.getElementById('laTitle').value.trim();
+            const type = document.getElementById('laType').value;
+            const description = document.getElementById('laDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#laMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please enter LA number and title');
+                return;
+            }
+
+            las.push({ number, title, type, description, mlos: selectedMLOs });
+            
+            document.getElementById('laNumber').value = '';
+            document.getElementById('laTitle').value = '';
+            document.getElementById('laType').value = '';
+            document.getElementById('laDescription').value = '';
+            document.querySelectorAll('#laMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderLAs();
+            updateProgress();
+        }
+
+        function renderLAs() {
+            const html = las.map((la, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>LA ${la.number}:</strong> ${la.title}<br>
+                            <small>Type: ${la.type || 'N/A'} | MLOs: ${la.mlos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeLA(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('laList').innerHTML = html;
+        }
+
+        function removeLA(index) {
+            if (confirm('Delete this LA?')) {
+                las.splice(index, 1);
+                renderLAs();
+                updateProgress();
+            }
+        }
+
+        // Assignment functions
+        function addAssignment() {
+            const number = document.getElementById('asgmtNumber').value.trim();
+            const title = document.getElementById('asgmtTitle').value.trim();
+            const type = document.getElementById('asgmtType').value;
+            const description = document.getElementById('asgmtDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please enter assignment number and title');
+                return;
+            }
+
+            assignments.push({ number, title, type, description, mlos: selectedMLOs });
+            
+            document.getElementById('asgmtNumber').value = '';
+            document.getElementById('asgmtTitle').value = '';
+            document.getElementById('asgmtType').value = '';
+            document.getElementById('asgmtDescription').value = '';
+            document.querySelectorAll('#asgmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderAssignments();
+            updateProgress();
+        }
+
+        function renderAssignments() {
+            const html = assignments.map((asgmt, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>Assignment ${asgmt.number}:</strong> ${asgmt.title}<br>
+                            <small>Type: ${asgmt.type || 'N/A'} | MLOs: ${asgmt.mlos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeAssignment(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('asgmtList').innerHTML = html;
+        }
+
+        function removeAssignment(index) {
+            if (confirm('Delete this assignment?')) {
+                assignments.splice(index, 1);
+                renderAssignments();
+                updateProgress();
+            }
+        }
+
+        // Assessment functions
+        function addAssessment() {
+            const number = document.getElementById('asmtNumber').value.trim();
+            const title = document.getElementById('asmtTitle').value.trim();
+            const type = document.getElementById('asmtType').value;
+            const description = document.getElementById('asmtDescription').value.trim();
+            const selectedMLOs = Array.from(document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox:checked')).map(cb => cb.value);
+
+            if (!number || !title) {
+                alert('Please enter assessment number and title');
+                return;
+            }
+
+            assessments.push({ number, title, type, description, mlos: selectedMLOs });
+            
+            document.getElementById('asmtNumber').value = '';
+            document.getElementById('asmtTitle').value = '';
+            document.getElementById('asmtType').value = '';
+            document.getElementById('asmtDescription').value = '';
+            document.querySelectorAll('#asmtMloCheckboxes .mlo-checkbox').forEach(cb => cb.checked = false);
+            
+            renderAssessments();
+            updateProgress();
+        }
+
+        function renderAssessments() {
+            const html = assessments.map((asmt, i) => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <div>
+                            <strong>Assessment ${asmt.number}:</strong> ${asmt.title}<br>
+                            <small>Type: ${asmt.type || 'N/A'} | MLOs: ${asmt.mlos.join(', ') || 'None'}</small>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn-remove" onclick="removeAssessment(${i})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('asmtList').innerHTML = html;
+        }
+
+        function removeAssessment(index) {
+            if (confirm('Delete this assessment?')) {
+                assessments.splice(index, 1);
+                renderAssessments();
+                updateProgress();
+            }
+        }
+
+        // Alignment checker
+        function runAlignmentCheck() {
+            const warnings = [];
+
+            // Check CLO coverage
+            clos.forEach(clo => {
+                const count = mlos.filter(mlo => mlo.clos.includes(String(clo.number))).length;
+                if (count < 2) {
+                    warnings.push(`⚠️ CLO ${clo.number} is only addressed ${count} time(s). Best practice: 2+`);
+                }
+            });
+
+            // Check MLOs
+            mlos.forEach(mlo => {
+                const mloId = `${mlo.module}-${mlo.number}`;
+                const hasIC = ics.some(ic => ic.mlos.includes(mloId));
+                const hasLA = las.some(la => la.mlos.includes(mloId));
+                const hasAsgmt = assignments.some(a => a.mlos.includes(mloId));
+                const hasAsmt = assessments.some(a => a.mlos.includes(mloId));
+
+                if (!hasIC) warnings.push(`⚠️ MLO ${mlo.module}.${mlo.number} has no Instructional Content`);
+                if (!hasLA && !hasAsgmt) warnings.push(`⚠️ MLO ${mlo.module}.${mlo.number} has no Learning Activity or Assignment`);
+                if (!hasAsmt) warnings.push(`⚠️ MLO ${mlo.module}.${mlo.number} has no Assessment`);
+            });
+
+            const container = document.getElementById('alignmentWarnings');
+            if (warnings.length === 0) {
+                container.innerHTML = '<div class="alert alert-success"><strong>✅ Excellent!</strong> No alignment gaps detected.</div>';
             } else {
-                gapsSection.innerHTML = `
-                    <div style="margin-top: 30px;">
-                        <h3 style="color: #e74c3c; margin-bottom: 20px;">⚠️ Alignment Gaps Detected (${gaps.length})</h3>
-                        ${gaps.map(gap => `<div class="gap-item">${gap}</div>`).join('')}
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <strong>⚠️ ${warnings.length} Recommendation(s):</strong>
+                        <ul style="margin-top: 10px;">
+                            ${warnings.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
                     </div>
                 `;
             }
         }
 
+        // Generate summary
+        function generateSummary() {
+            const summary = `
+                <div class="summary-row">
+                    <strong>Course:</strong>
+                    <span>${document.getElementById('courseId').value} - ${document.getElementById('courseTitle').value}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>CLOs:</strong>
+                    <span>${clos.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>MLOs:</strong>
+                    <span>${mlos.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Instructional Content:</strong>
+                    <span>${ics.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Learning Activities:</strong>
+                    <span>${las.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Assignments:</strong>
+                    <span>${assignments.length}</span>
+                </div>
+                <div class="summary-row">
+                    <strong>Assessments:</strong>
+                    <span>${assessments.length}</span>
+                </div>
+            `;
+            document.getElementById('summaryContent').innerHTML = summary;
+        }
+
+        // Export to Excel
         function exportToExcel() {
-            if (clos.length === 0 || mlos.length === 0) {
-                alert('Please add CLOs and MLOs before exporting');
+            if (clos.length === 0 && mlos.length === 0) {
+                alert('Please add some content before exporting');
                 return;
             }
 
             const wb = XLSX.utils.book_new();
 
-            // Course Info Sheet
+            // Course Info
             const courseInfo = [
                 ['FTCC Course Map'],
                 [''],
                 ['Course ID:', document.getElementById('courseId').value],
                 ['Course Title:', document.getElementById('courseTitle').value],
                 ['Instructor:', document.getElementById('instructor').value],
-                ['Course Representative:', document.getElementById('courseRep').value],
-                ['Department:', document.getElementById('department').value],
-                ['Canvas ID:', document.getElementById('canvasId').value],
+                ['Course Rep:', document.getElementById('courseRep').value],
                 [''],
-                ['NCCCS Description:'],
-                [document.getElementById('ncccsDescription').value],
-                [''],
-                ['Has NCCCS-Mandated CLOs:', document.getElementById('hasNcccsClos').checked ? 'YES' : 'NO']
+                ['Description:'],
+                [document.getElementById('ncccsDescription').value]
             ];
-            const ws1 = XLSX.utils.aoa_to_sheet(courseInfo);
-            XLSX.utils.book_append_sheet(wb, ws1, 'Course Info');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(courseInfo), 'Course Info');
 
-            // CLOs Sheet
+            // CLOs
             const cloData = [['CLO #', 'CLO Text']];
-            clos.forEach(clo => {
-                cloData.push([`CLO ${clo.number}`, clo.text]);
-            });
-            const ws2 = XLSX.utils.aoa_to_sheet(cloData);
-            XLSX.utils.book_append_sheet(wb, ws2, 'CLOs');
+            clos.forEach(clo => cloData.push([`CLO ${clo.number}`, clo.text]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cloData), 'CLOs');
 
-            // MLO Alignment Sheet
-            const mloData = [['Module', 'MLO #', 'MLO Text', 'CLOs', 'IC #', 'IC Title', 'IC Type', 'IC Description', 'LA #', 'LA Title', 'LA Type', 'LA Description', 'Asgmt #', 'Asgmt Title', 'Asgmt Type', 'Asgmt Description', 'Asmt #', 'Asmt Title', 'Asmt Type', 'Asmt Description']];
-            mlos.forEach(mlo => {
-                mloData.push([
-                    mlo.module,
-                    mlo.number,
-                    mlo.text,
-                    mlo.clos.join(', '),
-                    mlo.ic.number,
-                    mlo.ic.title,
-                    mlo.ic.type,
-                    mlo.ic.description,
-                    mlo.la.number,
-                    mlo.la.title,
-                    mlo.la.type,
-                    mlo.la.description,
-                    mlo.asgmt.number,
-                    mlo.asgmt.title,
-                    mlo.asgmt.type,
-                    mlo.asgmt.description,
-                    mlo.asmt.number,
-                    mlo.asmt.title,
-                    mlo.asmt.type,
-                    mlo.asmt.description
-                ]);
-            });
-            const ws3 = XLSX.utils.aoa_to_sheet(mloData);
-            XLSX.utils.book_append_sheet(wb, ws3, 'MLO Alignment');
+            // MLOs
+            const mloData = [['Module', 'MLO #', 'MLO Text', 'CLOs']];
+            mlos.forEach(mlo => mloData.push([mlo.module, mlo.number, mlo.text, mlo.clos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mloData), 'MLOs');
 
-            // Export
+            // ICs
+            const icData = [['IC #', 'Title', 'Type', 'Description', 'MLOs']];
+            ics.forEach(ic => icData.push([ic.number, ic.title, ic.type, ic.description, ic.mlos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(icData), 'Instructional Content');
+
+            // LAs
+            const laData = [['LA #', 'Title', 'Type', 'Description', 'MLOs']];
+            las.forEach(la => laData.push([la.number, la.title, la.type, la.description, la.mlos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(laData), 'Learning Activities');
+
+            // Assignments
+            const asgmtData = [['Asgmt #', 'Title', 'Type', 'Description', 'MLOs']];
+            assignments.forEach(a => asgmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asgmtData), 'Assignments');
+
+            // Assessments
+            const asmtData = [['Asmt #', 'Title', 'Type', 'Description', 'MLOs']];
+            assessments.forEach(a => asmtData.push([a.number, a.title, a.type, a.description, a.mlos.join(', ')]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asmtData), 'Assessments');
+
             const courseId = document.getElementById('courseId').value || 'Course';
             const date = new Date().toISOString().split('T')[0];
             XLSX.writeFile(wb, `${courseId}_CourseMap_${date}.xlsx`);
         }
 
+        // Load from file
         function loadFromFile() {
             document.getElementById('fileInput').click();
         }
@@ -957,77 +1324,96 @@
                         document.getElementById('courseTitle').value = infoSheet['B4']?.v || '';
                         document.getElementById('instructor').value = infoSheet['B5']?.v || '';
                         document.getElementById('courseRep').value = infoSheet['B6']?.v || '';
-                        document.getElementById('department').value = infoSheet['B7']?.v || '';
-                        document.getElementById('canvasId').value = infoSheet['B8']?.v || '';
-                        document.getElementById('ncccsDescription').value = infoSheet['A11']?.v || '';
-                        document.getElementById('hasNcccsClos').checked = infoSheet['B13']?.v === 'YES';
+                        document.getElementById('ncccsDescription').value = infoSheet['A9']?.v || '';
                     }
 
-                    // Load CLOs - FIXED
-                    const cloSheet = workbook.Sheets['CLOs'];
-                    if (cloSheet) {
-                        const cloJson = XLSX.utils.sheet_to_json(cloSheet);
-                        clos = cloJson.map((row, index) => ({
-                            number: index + 1,
+                    // Load CLOs
+                    if (workbook.Sheets['CLOs']) {
+                        const cloJson = XLSX.utils.sheet_to_json(workbook.Sheets['CLOs']);
+                        clos = cloJson.map((row, i) => ({
+                            number: i + 1,
                             text: row['CLO Text'] || ''
-                        })).filter(clo => clo.text); // Filter out empty rows
+                        })).filter(c => c.text);
                         renderCLOs();
                     }
 
-                    // Load MLOs - FIXED
-                    const mloSheet = workbook.Sheets['MLO Alignment'];
-                    if (mloSheet) {
-                        const mloJson = XLSX.utils.sheet_to_json(mloSheet);
-                        mlos = mloJson.map(row => {
-                            // Parse CLOs string safely
-                            let closArray = [];
-                            if (row['CLOs']) {
-                                closArray = String(row['CLOs']).split(',').map(s => s.trim()).filter(s => s);
-                            }
-                            
-                            return {
-                                module: String(row['Module'] || ''),
-                                number: String(row['MLO #'] || ''),
-                                text: String(row['MLO Text'] || ''),
-                                clos: closArray,
-                                ic: {
-                                    number: String(row['IC #'] || ''),
-                                    title: String(row['IC Title'] || ''),
-                                    type: String(row['IC Type'] || ''),
-                                    description: String(row['IC Description'] || '')
-                                },
-                                la: {
-                                    number: String(row['LA #'] || ''),
-                                    title: String(row['LA Title'] || ''),
-                                    type: String(row['LA Type'] || ''),
-                                    description: String(row['LA Description'] || '')
-                                },
-                                asgmt: {
-                                    number: String(row['Asgmt #'] || ''),
-                                    title: String(row['Asgmt Title'] || ''),
-                                    type: String(row['Asgmt Type'] || ''),
-                                    description: String(row['Asgmt Description'] || '')
-                                },
-                                asmt: {
-                                    number: String(row['Asmt #'] || ''),
-                                    title: String(row['Asmt Title'] || ''),
-                                    type: String(row['Asmt Type'] || ''),
-                                    description: String(row['Asmt Description'] || '')
-                                }
-                            };
-                        }).filter(mlo => mlo.text); // Filter out empty rows
+                    // Load MLOs
+                    if (workbook.Sheets['MLOs']) {
+                        const mloJson = XLSX.utils.sheet_to_json(workbook.Sheets['MLOs']);
+                        mlos = mloJson.map(row => ({
+                            module: String(row['Module'] || ''),
+                            number: String(row['MLO #'] || ''),
+                            text: String(row['MLO Text'] || ''),
+                            clos: row['CLOs'] ? String(row['CLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(m => m.text);
                         renderMLOs();
                     }
 
-                    alert('✅ File loaded successfully! You can continue editing.');
+                    // Load ICs
+                    if (workbook.Sheets['Instructional Content']) {
+                        const icJson = XLSX.utils.sheet_to_json(workbook.Sheets['Instructional Content']);
+                        ics = icJson.map(row => ({
+                            number: String(row['IC #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(i => i.title);
+                        renderICs();
+                    }
+
+                    // Load LAs
+                    if (workbook.Sheets['Learning Activities']) {
+                        const laJson = XLSX.utils.sheet_to_json(workbook.Sheets['Learning Activities']);
+                        las = laJson.map(row => ({
+                            number: String(row['LA #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(l => l.title);
+                        renderLAs();
+                    }
+
+                    // Load Assignments
+                    if (workbook.Sheets['Assignments']) {
+                        const asgmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assignments']);
+                        assignments = asgmtJson.map(row => ({
+                            number: String(row['Asgmt #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(a => a.title);
+                        renderAssignments();
+                    }
+
+                    // Load Assessments
+                    if (workbook.Sheets['Assessments']) {
+                        const asmtJson = XLSX.utils.sheet_to_json(workbook.Sheets['Assessments']);
+                        assessments = asmtJson.map(row => ({
+                            number: String(row['Asmt #'] || ''),
+                            title: String(row['Title'] || ''),
+                            type: String(row['Type'] || ''),
+                            description: String(row['Description'] || ''),
+                            mlos: row['MLOs'] ? String(row['MLOs']).split(',').map(s => s.trim()) : []
+                        })).filter(a => a.title);
+                        renderAssessments();
+                    }
+
+                    alert('✅ File loaded successfully!');
                     showTab('course-info');
+                    updateProgress();
                 } catch (error) {
-                    alert('Error loading file: ' + error.message + '\n\nPlease make sure you are uploading a file created by this tool.');
-                    console.error('Upload error:', error);
+                    alert('Error loading file: ' + error.message);
+                    console.error(error);
                 }
             };
             reader.readAsArrayBuffer(file);
         });
+
+        // Initialize
+        updateProgress();
     </script>
 </body>
 </html>
